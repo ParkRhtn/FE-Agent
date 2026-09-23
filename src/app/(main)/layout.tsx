@@ -1,7 +1,7 @@
-import { Workflow } from "lucide-react";
 import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 
+import { Logo } from "@/components/logo";
 import { TopNav } from "@/components/top-nav";
 import { UserMenu } from "@/components/user-menu";
 import { backend } from "@/lib/api/server";
@@ -15,11 +15,8 @@ export default async function MainLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="flex h-full w-full flex-col">
       <header className="flex h-12 shrink-0 items-center gap-6 border-b px-4">
-        <Link href="/workflows" className="flex items-center gap-2 text-sm font-semibold">
-          <span className="bg-foreground text-background flex size-6 items-center justify-center rounded-md">
-            <Workflow className="size-3.5" />
-          </span>
-          Agent
+        <Link href="/workflows" aria-label="홈 (워크플로우)" className="rounded-md outline-offset-4">
+          <Logo />
         </Link>
         <TopNav />
         <div className="ml-auto">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 
@@ -6,7 +7,8 @@ export default async function ResetPasswordPage({ searchParams }: PageProps<"/re
   const { token } = await searchParams;
 
   return (
-    <div className="flex flex-1 items-center justify-center p-6">
+    <div className="flex flex-1 flex-col items-center justify-center gap-8 p-6">
+      <Logo className="text-lg [&_svg]:size-8" />
       {typeof token === "string" && token ? (
         <ResetPasswordForm token={token} />
       ) : (
