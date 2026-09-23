@@ -60,7 +60,7 @@ export function AgentForm({ agent, models, defaultModel, tools }: AgentFormProps
 
   return (
     <form
-      className="mx-auto flex w-full max-w-2xl flex-col gap-5 p-6"
+      className="mx-auto flex w-full max-w-2xl flex-col gap-5 p-6 pt-14"
       onSubmit={(e) => {
         e.preventDefault();
         save();

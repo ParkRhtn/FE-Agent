@@ -1,18 +1,14 @@
 import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 
-import { logout } from "@/app/login/actions";
 
 import { NewThreadButton } from "@/components/new-thread-button";
 import { backend } from "@/lib/api/server";
 
 export async function Sidebar() {
-  const [{ data: threads, error }, { data: me }] = await Promise.all([
-    backend.GET("/api/v1/threads"),
-    backend.GET("/api/v1/auth/me"),
-  ]).catch((e: unknown) => {
+  const { data: threads, error } = await backend.GET("/api/v1/threads").catch((e: unknown) => {
     unstable_rethrow(e); // 401 → redirect 는 그대로 전파
-    return [{ data: undefined, error: e }, { data: undefined }] as const;
+    return { data: undefined, error: e };
   });
 
   return (
@@ -34,14 +30,6 @@ export async function Sidebar() {
           </Link>
         ))}
       </nav>
-      <div className="mt-auto flex items-center gap-2 border-t pt-2">
-        <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">{me?.email}</span>
-        <form action={logout}>
-          <button type="submit" className="text-muted-foreground hover:text-foreground text-xs hover:underline">
-            로그아웃
-          </button>
-        </form>
-      </div>
     </aside>
   );
 }
