@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const TOKEN_COOKIE = "token";
-const PUBLIC_PATHS = ["/login", "/auth/logout"];
+const PUBLIC_PATHS = ["/login", "/auth/logout", "/forgot-password", "/reset-password"];
 
 /** 서명 검증 없이 만료 시각만 본다. 실제 검증은 백엔드가 한다 (낙관적 체크). */
 function isExpired(token: string): boolean {

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 
 import { login, signup, type AuthState } from "@/app/login/actions";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 const inputClass = "bg-background w-full rounded-lg border px-2.5 py-2 text-sm";
 
-export function LoginForm({ next }: { next?: string }) {
+export function LoginForm({ next, notice }: { next?: string; notice?: string }) {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [loginState, loginAction, loginPending] = useActionState<AuthState, FormData>(login, {});
   const [signupState, signupAction, signupPending] = useActionState<AuthState, FormData>(signup, {});
@@ -20,6 +21,9 @@ export function LoginForm({ next }: { next?: string }) {
     <form action={isLogin ? loginAction : signupAction} className="flex w-full max-w-sm flex-col gap-4">
       <h1 className="text-center text-2xl font-semibold">{isLogin ? "로그인" : "회원가입"}</h1>
       <input type="hidden" name="next" value={next ?? "/"} />
+      {notice && !state.error && (
+        <p className="bg-muted rounded-lg px-3 py-2 text-center text-sm">{notice}</p>
+      )}
 
       <label className="flex flex-col gap-1.5 text-sm font-medium">
         이메일
@@ -46,6 +50,11 @@ export function LoginForm({ next }: { next?: string }) {
         />
         {!isLogin && <span className="text-muted-foreground text-xs font-normal">8자 이상</span>}
       </label>
+      {isLogin && (
+        <Link href="/forgot-password" className="text-muted-foreground -mt-2 self-end text-xs hover:underline">
+          비밀번호를 잊으셨나요?
+        </Link>
+      )}
 
       {state.error && <p className="text-destructive text-sm">{state.error}</p>}
 
