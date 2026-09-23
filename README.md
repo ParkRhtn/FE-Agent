@@ -1,5 +1,7 @@
 # FE-Agent
 
+[![CI](https://github.com/ParkRhtn/FE-Agent/actions/workflows/ci.yml/badge.svg)](https://github.com/ParkRhtn/FE-Agent/actions/workflows/ci.yml)
+
 BE-Agent(`../BE-Agent`)용 Next.js 프론트엔드. Vercel AI SDK `useChat` 으로 에이전트 응답을 스트리밍한다.
 
 ## 스택
