@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 
-
 import { NewThreadButton } from "@/components/new-thread-button";
 import { backend } from "@/lib/api/server";
 
@@ -14,10 +13,6 @@ export async function Sidebar() {
   return (
     <aside className="bg-muted/40 flex w-64 shrink-0 flex-col gap-2 border-r p-3">
       <NewThreadButton className="w-full" />
-      <Link href="/agents" className="hover:bg-muted rounded-md px-2 py-1.5 text-sm font-medium">
-        에이전트 관리
-      </Link>
-      <p className="text-muted-foreground px-2 pt-2 text-xs">대화</p>
       <nav className="flex flex-col gap-0.5 overflow-y-auto">
         {error ? <p className="text-destructive p-2 text-xs">백엔드에 연결할 수 없습니다.</p> : null}
         {threads?.map((thread) => (

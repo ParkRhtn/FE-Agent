@@ -65,7 +65,7 @@ export function Chat({ threadId, initialMessages, initialModel, models, agent }:
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex min-h-12 items-center gap-2 border-b py-2 pr-14 pl-4">
+      <header className="flex min-h-12 items-center gap-2 border-b px-4 py-2">
         {agent ? (
           <Link href={`/agents/${agent.id}`} className="text-sm font-medium hover:underline">
             {agent.name}

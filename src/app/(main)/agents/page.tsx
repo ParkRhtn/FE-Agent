@@ -8,7 +8,7 @@ export default async function AgentsPage() {
   const { data: agents = [] } = await backend.GET("/api/v1/agents");
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6 pt-14">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">에이전트</h1>
         <Link href="/agents/new" className={buttonVariants()}>
