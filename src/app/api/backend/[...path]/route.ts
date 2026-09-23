@@ -36,4 +36,4 @@ async function proxy(request: Request, { params }: RouteContext<"/api/backend/[.
   return new Response(upstream.body, { status: upstream.status, headers: responseHeaders });
 }
 
-export { proxy as DELETE, proxy as GET, proxy as PATCH, proxy as POST };
+export { proxy as DELETE, proxy as GET, proxy as PATCH, proxy as POST, proxy as PUT };
