@@ -4,7 +4,7 @@ BE-Agent(`../BE-Agent`)용 Next.js 프론트엔드. Vercel AI SDK `useChat` 으�
 
 ## 스택
 
-Next.js 16 (App Router) · React 19 · Vercel AI SDK 7 · shadcn/ui · Tailwind CSS 4 · openapi-typescript + openapi-fetch
+Next.js 16 (App Router) · React 19 · Vercel AI SDK 7 · React Flow 12 · shadcn/ui · Tailwind CSS 4 · openapi-typescript + openapi-fetch
 
 ## 빠른 시작
 
@@ -22,14 +22,17 @@ src/
 │   ├── (main)/                         # 사이드바가 있는 화면들
 │   │   ├── layout.tsx                  # 사이드바 (스레드 목록, 로그아웃)
 │   │   ├── agents/                     # 에이전트 목록 / 생성 / 편집
+│   │   ├── workflows/                  # 워크플로우 목록 / React Flow 편집기
 │   │   └── chat/[id]/page.tsx          # 대화 이력 SSR 후 Chat 컴포넌트로 넘김
 │   ├── login/                          # 로그인 화면 + Server Actions
 │   ├── auth/logout/route.ts            # 쿠키 삭제 후 /login
 │   └── api/backend/[...path]/route.ts  # BFF 프록시: 브라우저 → Next → FastAPI (JWT 주입, SSE 그대로 전달)
 ├── proxy.ts                            # 미로그인 시 /login 으로
+├── components/workflow/                # 편집기(캔버스·실행 패널), 노드 모양, 노드 설정 패널
 ├── components/chat/
 │   ├── chat.tsx                        # useChat + DefaultChatTransport
 │   └── message.tsx                     # 텍스트 / 도구 호출 파트 렌더링
+├── lib/workflow.ts                     # 노드 종류 정의, React Flow ↔ 백엔드 그래프 변환
 └── lib/api/
     ├── schema.d.ts                     # 백엔드 OpenAPI 로 자동 생성 (직접 수정 금지)
     ├── server.ts                       # 서버 컴포넌트용 타입 안전 클라이언트

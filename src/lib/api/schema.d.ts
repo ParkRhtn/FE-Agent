@@ -203,6 +203,63 @@ export interface paths {
         patch: operations["update_agent_api_v1_agents__agent_id__patch"];
         trace?: never;
     };
+    "/api/v1/workflows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Workflows */
+        get: operations["list_workflows_api_v1_workflows_get"];
+        put?: never;
+        /** Create Workflow */
+        post: operations["create_workflow_api_v1_workflows_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/{workflow_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Workflow */
+        get: operations["get_workflow_api_v1_workflows__workflow_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Workflow */
+        delete: operations["delete_workflow_api_v1_workflows__workflow_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Workflow
+         * @description 그래프는 미완성이어도 저장할 수 있다. 검증은 실행할 때 한다.
+         */
+        patch: operations["update_workflow_api_v1_workflows__workflow_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/workflows/{workflow_id}/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run Workflow */
+        post: operations["run_workflow_api_v1_workflows__workflow_id__run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tools": {
         parameters: {
             query?: never;
@@ -345,6 +402,13 @@ export interface components {
             /** Allowed */
             allowed: string[];
         };
+        /** NodePosition */
+        NodePosition: {
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+        };
         /** PasswordResetConfirm */
         PasswordResetConfirm: {
             /** Token */
@@ -454,6 +518,95 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** WorkflowCreate */
+        WorkflowCreate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            graph?: components["schemas"]["WorkflowGraph"] | null;
+        };
+        /** WorkflowEdge */
+        WorkflowEdge: {
+            /** Id */
+            id: string;
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Sourcehandle */
+            sourceHandle?: string | null;
+        };
+        /** WorkflowGraph */
+        WorkflowGraph: {
+            /**
+             * Nodes
+             * @default []
+             */
+            nodes: components["schemas"]["WorkflowNode"][];
+            /**
+             * Edges
+             * @default []
+             */
+            edges: components["schemas"]["WorkflowEdge"][];
+        };
+        /**
+         * WorkflowNode
+         * @description React Flow 노드와 같은 모양. 화면 전용 필드(selected, measured 등)는 저장하지 않는다.
+         */
+        WorkflowNode: {
+            /** Id */
+            id: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "start" | "llm" | "agent" | "tool" | "condition" | "end";
+            position: components["schemas"]["NodePosition"];
+            /**
+             * Data
+             * @default {}
+             */
+            data: {
+                [key: string]: unknown;
+            };
+        };
+        /** WorkflowRead */
+        WorkflowRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            graph: components["schemas"]["WorkflowGraph"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** WorkflowRunRequest */
+        WorkflowRunRequest: {
+            /**
+             * Input
+             * @default
+             */
+            input: string;
+        };
+        /** WorkflowUpdate */
+        WorkflowUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            graph?: components["schemas"]["WorkflowGraph"] | null;
         };
     };
     responses: never;
@@ -966,6 +1119,196 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AgentRead"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_workflows_api_v1_workflows_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowRead"][];
+                };
+            };
+        };
+    };
+    create_workflow_api_v1_workflows_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkflowCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_workflow_api_v1_workflows__workflow_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_workflow_api_v1_workflows__workflow_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_workflow_api_v1_workflows__workflow_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkflowUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_workflow_api_v1_workflows__workflow_id__run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkflowRunRequest"];
+            };
+        };
+        responses: {
+            /** @description 노드별 실행 이벤트 (SSE, data: JSON) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": unknown;
+                };
+            };
+            /** @description 그래프 검증 실패. detail 에 오류 목록 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
