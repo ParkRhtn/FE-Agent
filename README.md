@@ -20,7 +20,8 @@ pnpm dev                   # http://localhost:3000 (백엔드가 8000 에서 떠
 src/
 ├── app/
 │   ├── (main)/                         # 사이드바가 있는 화면들
-│   │   ├── layout.tsx                  # 사이드바 (스레드 목록, 로그아웃)
+│   │   ├── layout.tsx                  # 왼쪽 메뉴 사이드바 + 본문
+│   │   ├── settings/                   # 모델 제공사·기본 모델 설정
 │   │   ├── agents/                     # 에이전트 목록 / 생성 / 편집
 │   │   ├── workflows/                  # 워크플로우 목록 / React Flow 편집기
 │   │   └── chat/[id]/page.tsx          # 대화 이력 SSR 후 Chat 컴포넌트로 넘김
@@ -28,6 +29,7 @@ src/
 │   ├── auth/logout/route.ts            # 쿠키 삭제 후 /login
 │   └── api/backend/[...path]/route.ts  # BFF 프록시: 브라우저 → Next → FastAPI (JWT 주입, SSE 그대로 전달)
 ├── proxy.ts                            # 미로그인 시 /login 으로
+├── components/app-sidebar.tsx          # 왼쪽 메뉴 (메뉴 추가는 NAV 배열에), 접기, 계정 메뉴
 ├── components/workflow/                # 편집기(캔버스·실행 패널), 노드 모양, 노드 설정 패널
 ├── components/chat/
 │   ├── chat.tsx                        # useChat + DefaultChatTransport

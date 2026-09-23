@@ -1,9 +1,6 @@
-import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 
-import { Logo } from "@/components/logo";
-import { TopNav } from "@/components/top-nav";
-import { UserMenu } from "@/components/user-menu";
+import { AppSidebar } from "@/components/app-sidebar";
 import { backend } from "@/lib/api/server";
 
 export default async function MainLayout({ children }: LayoutProps<"/">) {
@@ -13,17 +10,9 @@ export default async function MainLayout({ children }: LayoutProps<"/">) {
   });
 
   return (
-    <div className="flex h-full w-full flex-col">
-      <header className="flex h-12 shrink-0 items-center gap-6 border-b px-4">
-        <Link href="/workflows" aria-label="홈 (워크플로우)" className="rounded-md outline-offset-4">
-          <Logo />
-        </Link>
-        <TopNav />
-        <div className="ml-auto">
-          <UserMenu email={me?.email} />
-        </div>
-      </header>
-      <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+    <div className="flex h-full w-full">
+      <AppSidebar email={me?.email} />
+      <main className="flex min-w-0 flex-1 flex-col">{children}</main>
     </div>
   );
 }

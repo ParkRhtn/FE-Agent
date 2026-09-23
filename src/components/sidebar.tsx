@@ -11,7 +11,7 @@ export async function Sidebar() {
   });
 
   return (
-    <aside className="bg-muted/40 flex w-64 shrink-0 flex-col gap-2 border-r p-3">
+    <aside className="bg-background flex w-60 shrink-0 flex-col gap-2 border-r p-3">
       <NewThreadButton className="w-full" />
       <nav className="flex flex-col gap-0.5 overflow-y-auto">
         {error ? <p className="text-destructive p-2 text-xs">백엔드에 연결할 수 없습니다.</p> : null}
