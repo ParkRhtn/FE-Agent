@@ -22,9 +22,8 @@ src/
 │   ├── (main)/                         # 사이드바가 있는 화면들
 │   │   ├── layout.tsx                  # 왼쪽 메뉴 사이드바 + 본문
 │   │   ├── settings/                   # 모델 제공사·기본 모델 설정
-│   │   ├── agents/                     # 에이전트 목록 / 생성 / 편집
+│   │   ├── chat/                       # 대화 + 에이전트 (왼쪽 에이전트·최근 대화, 오른쪽 에이전트 설정 패널)
 │   │   ├── workflows/                  # 워크플로우 목록 / React Flow 편집기
-│   │   └── chat/[id]/page.tsx          # 대화 이력 SSR 후 Chat 컴포넌트로 넘김
 │   ├── login/                          # 로그인 화면 + Server Actions
 │   ├── auth/logout/route.ts            # 쿠키 삭제 후 /login
 │   └── api/backend/[...path]/route.ts  # BFF 프록시: 브라우저 → Next → FastAPI (JWT 주입, SSE 그대로 전달)

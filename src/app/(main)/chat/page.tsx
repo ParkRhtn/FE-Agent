@@ -1,28 +1,43 @@
-import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 
-import { NewThreadButton } from "@/components/new-thread-button";
+import { NewAgentButton } from "@/components/chat/new-agent-button";
+import { StartChatCard } from "@/components/chat/start-chat-card";
 import { backend } from "@/lib/api/server";
 
-export default async function Home() {
-  const { data: agents = [] } = await backend.GET("/api/v1/agents").catch((e: unknown) => {
+export default async function ChatHome() {
+  const [{ data: agents = [] }, { data: tools = [] }] = await Promise.all([
+    backend.GET("/api/v1/agents"),
+    backend.GET("/api/v1/tools"),
+  ]).catch((e: unknown) => {
     unstable_rethrow(e);
-    return { data: undefined };
+    return [{ data: undefined }, { data: undefined }] as const;
   });
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-      <h1 className="text-2xl font-semibold">무엇을 도와드릴까요?</h1>
-      <p className="text-muted-foreground text-sm">새 대화를 시작하거나 왼쪽에서 이전 대화를 선택하세요.</p>
-      <div className="flex flex-wrap justify-center gap-2">
-        <NewThreadButton />
-        {agents.map((agent) => (
-          <NewThreadButton key={agent.id} agentId={agent.id} label={agent.name} variant="outline" />
-        ))}
+    <div className="flex flex-1 flex-col overflow-y-auto">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-16">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold">누구와 대화할까요?</h1>
+          <p className="text-muted-foreground text-sm">
+            에이전트를 고르면 그 지시사항과 도구로 답합니다. 새 에이전트는 만들면서 바로 대화로 시험할 수 있습니다.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <StartChatCard name="기본 에이전트" description="특별한 지시 없이, 연결된 모든 도구를 쓰는 범용 조수" />
+          {agents.map((agent) => (
+            <StartChatCard
+              key={agent.id}
+              agentId={agent.id}
+              name={agent.name}
+              description={agent.description || agent.system_prompt}
+            />
+          ))}
+        </div>
+        <NewAgentButton
+          toolNames={tools.map((t) => t.name)}
+          className="hover:bg-muted/60 text-muted-foreground hover:text-foreground flex items-center gap-2.5 self-start rounded-md px-2 py-1.5 text-sm"
+        />
       </div>
-      <Link href="/agents" className="text-muted-foreground text-sm hover:underline">
-        에이전트 만들기
-      </Link>
     </div>
   );
 }

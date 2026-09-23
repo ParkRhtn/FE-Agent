@@ -9,14 +9,16 @@ function pickModel(options: { id: string }[], candidates: (string | null | undef
   return candidates.find((c) => c && options.some((o) => o.id === c)) ?? options[0]?.id ?? "";
 }
 
-export default async function ChatPage({ params }: PageProps<"/chat/[id]">) {
+export default async function ChatPage({ params, searchParams }: PageProps<"/chat/[id]">) {
   const { id } = await params;
+  const openSettings = (await searchParams).settings === "1";
   const path = { params: { path: { thread_id: id } } };
 
-  const [thread, messages, models] = await Promise.all([
+  const [thread, messages, models, tools] = await Promise.all([
     backend.GET("/api/v1/threads/{thread_id}", path),
     backend.GET("/api/v1/threads/{thread_id}/messages", path),
     backend.GET("/api/v1/models"),
+    backend.GET("/api/v1/tools"),
   ]);
   if (!thread.data) notFound();
   const options = models.data?.options ?? [];
@@ -31,8 +33,10 @@ export default async function ChatPage({ params }: PageProps<"/chat/[id]">) {
       threadId={id}
       initialMessages={(messages.data ?? []) as UIMessage[]}
       initialModel={pickModel(options, [thread.data.model, agent?.model, models.data?.default])}
-      agent={agent ? { id: agent.id, name: agent.name } : undefined}
+      agent={agent}
       models={options}
+      tools={tools.data ?? []}
+      openSettings={openSettings}
     />
   );
 }
