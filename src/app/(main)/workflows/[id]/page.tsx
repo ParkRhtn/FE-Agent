@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { WorkflowEditor } from "@/components/workflow/editor";
 import { backend } from "@/lib/api/server";
 
-export default async function WorkflowPage({ params }: PageProps<"/workflows/[id]">) {
+export default async function WorkflowPage({ params, searchParams }: PageProps<"/workflows/[id]">) {
   const { id } = await params;
+  const isNew = (await searchParams).new === "1";
 
   const [workflow, models, tools, agents] = await Promise.all([
     backend.GET("/api/v1/workflows/{workflow_id}", { params: { path: { workflow_id: id } } }),
@@ -21,6 +22,7 @@ export default async function WorkflowPage({ params }: PageProps<"/workflows/[id
       defaultModel={models.data?.default ?? null}
       tools={tools.data ?? []}
       agents={agents.data ?? []}
+      focusName={isNew}
     />
   );
 }

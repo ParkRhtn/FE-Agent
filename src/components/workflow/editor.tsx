@@ -16,11 +16,12 @@ import {
   type Edge,
 } from "@xyflow/react";
 import { cn } from "cn";
-import { ChevronRight, Play, Square, Trash2, X } from "lucide-react";
+import { ChevronRight, Pencil, Play, Square, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useMemo, useRef, useState } from "react";
 
+import { FeedbackButtons } from "@/components/feedback-buttons";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { NodeConfig } from "@/components/workflow/node-config";
@@ -40,6 +41,7 @@ import {
   type RunStatus,
   type Workflow,
 } from "@/lib/workflow";
+import { useStoredFlag } from "@/lib/use-stored-flag";
 
 type EditorProps = {
   workflow: Workflow;
@@ -47,6 +49,8 @@ type EditorProps = {
   defaultModel: string | null;
   tools: Tool[];
   agents: Agent[];
+  /** 새로 만든 워크플로우면 이름 칸을 먼저 선택한다 */
+  focusName?: boolean;
 };
 
 type Step = {
@@ -64,39 +68,6 @@ type RunState = {
 };
 type Panel = "config" | "run";
 
-const PALETTE_KEY = "workflow.paletteCollapsed";
-const paletteListeners = new Set<() => void>();
-let paletteMemory = false; // localStorage 를 못 쓸 때 대신 쓰는 값
-
-function readPaletteCollapsed(): boolean {
-  try {
-    return localStorage.getItem(PALETTE_KEY) === "1";
-  } catch {
-    return paletteMemory;
-  }
-}
-
-function writePaletteCollapsed(value: boolean) {
-  paletteMemory = value;
-  try {
-    localStorage.setItem(PALETTE_KEY, value ? "1" : "0");
-  } catch {}
-  paletteListeners.forEach((listener) => listener());
-}
-
-/** 노드 목록 접힘 상태 (브라우저에 기억). 서버 렌더링에서는 펼친 상태. */
-function usePaletteCollapsed(): [boolean, () => void] {
-  const collapsed = useSyncExternalStore(
-    (listener) => {
-      paletteListeners.add(listener);
-      return () => paletteListeners.delete(listener);
-    },
-    readPaletteCollapsed,
-    () => false,
-  );
-  return [collapsed, () => writePaletteCollapsed(!collapsed)];
-}
-
 const TAKEN_EDGE = "#10b981";
 
 function edgeFor(connection: Connection): Edge {
@@ -110,7 +81,7 @@ function snapshot(name: string, nodes: FlowNode[], edges: Edge[]): string {
   return JSON.stringify({ name, graph: fromFlow(nodes, edges) });
 }
 
-function Editor({ workflow, models, defaultModel, tools, agents }: EditorProps) {
+function Editor({ workflow, models, defaultModel, tools, agents, focusName }: EditorProps) {
   const router = useRouter();
   const { screenToFlowPosition } = useReactFlow();
   const initial = useMemo(() => toFlow(workflow.graph), [workflow.graph]);
@@ -122,10 +93,11 @@ function Editor({ workflow, models, defaultModel, tools, agents }: EditorProps) 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // 오른쪽 패널은 노드를 고르거나 실행할 때만 연다
   const [panel, setPanel] = useState<Panel | null>(null);
-  const [paletteCollapsed, togglePalette] = usePaletteCollapsed();
+  const [paletteCollapsed, setPaletteCollapsed] = useStoredFlag("workflow.paletteCollapsed");
   const [input, setInput] = useState("");
   const [run, setRun] = useState<RunState>({ status: "idle" });
   const [steps, setSteps] = useState<Step[]>([]);
+  const [runId, setRunId] = useState<string | null>(null); // 평가를 남길 실행 ID
   const [expanded, setExpanded] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -199,7 +171,7 @@ function Editor({ workflow, models, defaultModel, tools, agents }: EditorProps) 
           id,
           type: item.kind,
           position: {
-            x: position.x - 130 + offset,
+            x: position.x - 120 + offset,
             y: position.y - 40 + offset,
           },
           data: { ...NODE_META[item.kind].defaults, ...item.data },
@@ -289,6 +261,9 @@ function Editor({ workflow, models, defaultModel, tools, agents }: EditorProps) 
           errors: [`${event.node_id} 노드에서 멈췄습니다: ${event.error}`],
         });
         break;
+      case "run_start":
+        setRunId(event.run_id ?? null);
+        break;
       case "run_finish":
         setRun({ status: "done", output: event.output ?? "" });
         break;
@@ -299,6 +274,7 @@ function Editor({ workflow, models, defaultModel, tools, agents }: EditorProps) 
     setPanel("run");
     if (dirty && !(await save())) return;
     setSteps([]);
+    setRunId(null);
     setExpanded(null);
     setRun({ status: "running" });
     const controller = new AbortController();
@@ -361,12 +337,18 @@ function Editor({ workflow, models, defaultModel, tools, agents }: EditorProps) 
             워크플로우
           </Link>
           <ChevronRight className="text-muted-foreground size-4 shrink-0" />
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            aria-label="워크플로우 이름"
-            className="hover:bg-muted focus:bg-muted field-sizing-content max-w-80 min-w-12 truncate rounded-md px-1.5 py-1 font-semibold outline-none"
-          />
+          <label className="group/name hover:bg-muted focus-within:bg-muted flex min-w-0 cursor-text items-center gap-1 rounded-md px-1.5 py-1">
+            <input
+              value={name}
+              autoFocus={focusName}
+              onFocus={(e) => focusName && e.currentTarget.select()}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+              aria-label="워크플로우 이름"
+              className="field-sizing-content max-w-80 min-w-12 truncate bg-transparent font-semibold outline-none"
+            />
+            <Pencil className="text-muted-foreground size-3.5 shrink-0 opacity-60 group-hover/name:opacity-100" />
+          </label>
         </nav>
         <span className="text-muted-foreground flex shrink-0 items-center gap-1.5 text-xs">
           <span className={cn("size-1.5 rounded-full", dirty ? "bg-amber-500" : "bg-emerald-500")} />
@@ -407,11 +389,10 @@ function Editor({ workflow, models, defaultModel, tools, agents }: EditorProps) 
       <div className="flex min-h-0 flex-1">
         <NodePalette
           tools={tools}
-          models={models}
           agents={agents}
           collapsed={paletteCollapsed}
           disabled={running}
-          onToggle={togglePalette}
+          onToggle={() => setPaletteCollapsed(!paletteCollapsed)}
           onAdd={(item) => addNode(item)}
         />
         <div
@@ -452,7 +433,7 @@ function Editor({ workflow, models, defaultModel, tools, agents }: EditorProps) 
             proOptions={{ hideAttribution: true }}
           >
             <Background variant={BackgroundVariant.Dots} gap={20} size={1.3} color="#c4c4cc" />
-            <Controls showInteractive={false} position="bottom-right" />
+            <Controls showInteractive={false} position="bottom-left" />
           </ReactFlow>
         </div>
 
@@ -624,6 +605,12 @@ function Editor({ workflow, models, defaultModel, tools, agents }: EditorProps) 
                     <div className="flex flex-col gap-2 rounded-lg border border-emerald-200 bg-emerald-50/50 p-3">
                       <span className="text-xs font-medium text-emerald-700">최종 출력</span>
                       <p className="text-sm leading-relaxed whitespace-pre-wrap">{run.output || "(빈 출력)"}</p>
+                      {runId && (
+                        <div className="flex items-center justify-between gap-2 border-t border-emerald-200 pt-2">
+                          <span className="text-muted-foreground text-xs">이 결과는 어땠나요?</span>
+                          <FeedbackButtons key={runId} runId={runId} />
+                        </div>
+                      )}
                     </div>
                   )}
 

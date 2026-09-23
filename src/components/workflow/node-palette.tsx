@@ -3,7 +3,7 @@
 import { cn } from "cn";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
-import type { Agent, ModelOption, Tool } from "@/lib/api/client";
+import type { Agent, Tool } from "@/lib/api/client";
 import { NODE_META, type NodeData, type NodeKind } from "@/lib/workflow";
 
 /** 캔버스로 끌어다 놓을 때 쓰는 dataTransfer 형식 */
@@ -17,7 +17,7 @@ export type PaletteItem = {
   data?: NodeData;
 };
 
-function groups(tools: Tool[], agents: Agent[], models: ModelOption[]): { title: string; items: PaletteItem[] }[] {
+function groups(tools: Tool[], agents: Agent[]): { title: string; items: PaletteItem[] }[] {
   const base = (kind: NodeKind): PaletteItem => ({
     key: kind,
     kind,
@@ -29,14 +29,6 @@ function groups(tools: Tool[], agents: Agent[], models: ModelOption[]): { title:
       title: "AI",
       items: [
         base("llm"),
-        // 설정에서 켠 모델: 그 모델이 선택된 LLM 노드
-        ...models.map((m) => ({
-          key: `llm:${m.id}`,
-          kind: "llm" as const,
-          label: m.label,
-          description: `${m.provider} 모델로 프롬프트 실행`,
-          data: { model: m.id, model_label: m.label },
-        })),
         ...agents.map((a) => ({
           key: `agent:${a.id}`,
           kind: "agent" as const,
@@ -65,7 +57,6 @@ function groups(tools: Tool[], agents: Agent[], models: ModelOption[]): { title:
 
 type NodePaletteProps = {
   tools: Tool[];
-  models: ModelOption[];
   agents: Agent[];
   collapsed: boolean;
   disabled: boolean;
@@ -73,8 +64,8 @@ type NodePaletteProps = {
   onAdd: (item: PaletteItem) => void;
 };
 
-export function NodePalette({ tools, agents, models, collapsed, disabled, onToggle, onAdd }: NodePaletteProps) {
-  const sections = groups(tools, agents, models);
+export function NodePalette({ tools, agents, collapsed, disabled, onToggle, onAdd }: NodePaletteProps) {
+  const sections = groups(tools, agents);
   const dragProps = (item: PaletteItem) => ({
     draggable: !disabled,
     onDragStart: (e: React.DragEvent) => {

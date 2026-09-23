@@ -13,7 +13,7 @@ export function NewWorkflowButton() {
   const create = () =>
     startTransition(async () => {
       const { data } = await api.POST("/api/v1/workflows", { body: { name: "새 워크플로우" } });
-      if (data) router.push(`/workflows/${data.id}`);
+      if (data) router.push(`/workflows/${data.id}?new=1`);
     });
 
   return (

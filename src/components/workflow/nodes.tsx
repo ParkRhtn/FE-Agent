@@ -97,7 +97,7 @@ function WorkflowNodeView({ id, type, data, selected }: NodeProps<FlowNode>) {
   return (
     <div
       className={cn(
-        "bg-background w-[260px] rounded-xl border shadow-[0_1px_3px_rgb(0_0_0/0.06)] transition-[opacity,box-shadow]",
+        "bg-background w-[240px] rounded-xl border shadow-[0_1px_3px_rgb(0_0_0/0.06)] transition-[opacity,box-shadow]",
         selected && "border-foreground/30 ring-foreground/5 ring-4",
         data._status === "skipped" && "opacity-45",
         data._status === "error" && "border-destructive/50",
@@ -107,38 +107,42 @@ function WorkflowNodeView({ id, type, data, selected }: NodeProps<FlowNode>) {
         <Handle type="target" position={Position.Left} className={handleClass} style={{ background: meta.accent }} />
       )}
 
-      <div className="flex items-center gap-2.5 px-3 pt-3">
+      <div className="flex items-center gap-2 px-2.5 pt-2.5">
         <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-lg", meta.tile)}>
           <Icon className="size-4" />
         </span>
         <div className="flex min-w-0 flex-col leading-tight">
-          <span className="text-[13px] font-semibold">{meta.label}</span>
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="shrink-0 text-[13px] font-semibold">{meta.label}</span>
+            {/* LLM 은 쓰는 모델을 제목 옆에 (따로 한 줄을 쓰지 않게) */}
+            {kind === "llm" && (
+              <span className="truncate rounded bg-violet-50 px-1 text-[10px] leading-4 text-violet-700">
+                {str(data, "model_label") || "기본 모델"}
+              </span>
+            )}
+          </span>
           <span className="text-muted-foreground truncate font-mono text-[11px]">{id}</span>
         </div>
         <StatusIcon status={data._status} className="ml-auto" />
       </div>
 
-      <p className="text-muted-foreground line-clamp-3 px-3 pt-2 pb-3 text-xs leading-relaxed break-words">
-        <Summary kind={kind} data={data} />
-      </p>
-
-      {kind === "llm" && (
-        <div className="-mt-1.5 px-3 pb-3">
-          <span className="rounded bg-violet-50 px-1.5 py-0.5 text-[11px] text-violet-700">
-            {str(data, "model_label") || "기본 모델"}
-          </span>
-        </div>
-      )}
+      <div className="px-2.5 pt-1.5 pb-2.5">
+        <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed break-words">
+          <Summary kind={kind} data={data} />
+        </p>
+      </div>
 
       {showOutput && (
-        <p className="bg-muted/70 mx-3 mb-3 line-clamp-2 rounded-md px-2 py-1.5 text-[11px] leading-relaxed break-words">
-          {data._output || <span className="text-muted-foreground">…</span>}
-        </p>
+        <div className="bg-muted/70 mx-2.5 mb-2.5 rounded-md px-2 py-1.5">
+          <p className="line-clamp-2 text-[11px] leading-relaxed break-words">
+            {data._output || <span className="text-muted-foreground">…</span>}
+          </p>
+        </div>
       )}
       {data._error && (
-        <p className="bg-destructive/10 text-destructive mx-3 mb-3 line-clamp-3 rounded-md px-2 py-1.5 text-[11px]">
-          {data._error}
-        </p>
+        <div className="bg-destructive/10 mx-2.5 mb-2.5 rounded-md px-2 py-1.5">
+          <p className="text-destructive line-clamp-3 text-[11px] leading-relaxed break-words">{data._error}</p>
+        </div>
       )}
 
       {kind === "condition" ? (
@@ -147,7 +151,7 @@ function WorkflowNodeView({ id, type, data, selected }: NodeProps<FlowNode>) {
             <div
               key={branch}
               className={cn(
-                "relative flex items-center justify-end gap-1.5 px-3 py-1.5 last:rounded-b-xl",
+                "relative flex items-center justify-end gap-1.5 px-2.5 py-1 last:rounded-b-xl",
                 takenBranch === branch && (branch === "true" ? "bg-emerald-50 font-medium" : "bg-rose-50 font-medium"),
                 takenBranch && takenBranch !== branch && "opacity-40",
               )}

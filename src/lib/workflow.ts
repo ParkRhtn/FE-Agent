@@ -129,7 +129,8 @@ export function variablesFor(nodes: FlowNode[], selfId: string): string[] {
 }
 
 export type RunEvent =
-  | { type: "run_start" | "run_finish"; output?: string }
+  | { type: "run_start"; run_id?: string }
+  | { type: "run_finish"; output?: string }
   | { type: "node_start" | "node_skip"; node_id: string }
   | { type: "node_delta"; node_id: string; delta: string }
   | { type: "node_finish"; node_id: string; output: string }
