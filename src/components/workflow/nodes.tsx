@@ -61,7 +61,7 @@ function Summary({ kind, data }: { kind: NodeKind; data: FlowNode["data"] }) {
       );
     case "tool":
       return str(data, "tool") ? (
-        <span className="text-foreground font-mono">{str(data, "tool")}</span>
+        <span className="text-foreground font-medium">{str(data, "tool_label") || str(data, "tool")}</span>
       ) : (
         placeholder("도구를 선택하세요")
       );

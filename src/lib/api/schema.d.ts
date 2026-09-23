@@ -260,6 +260,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workflows/{workflow_id}/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Workflow Runs
+         * @description 최근 실행 기록 (새것부터).
+         */
+        get: operations["list_workflow_runs_api_v1_workflows__workflow_id__runs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/providers": {
         parameters: {
             query?: never;
@@ -333,6 +353,26 @@ export interface paths {
          * @description 모델에 짧은 요청을 실제로 보내본다. 크레딧 부족·모델 권한 문제도 여기서 드러난다.
          */
         post: operations["test_provider_model_api_v1_providers__provider_id__test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Run
+         * @description 실행 한 번의 입력·노드별 결과·최종 출력.
+         */
+        get: operations["get_run_api_v1_runs__run_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -663,6 +703,63 @@ export interface components {
             /** Enabled Models */
             enabled_models?: string[] | null;
         };
+        /** RunDetail */
+        RunDetail: {
+            /** Id */
+            id: string;
+            /** Status */
+            status: string | null;
+            /** Input */
+            input: string | null;
+            /** Output */
+            output: string | null;
+            /** Error */
+            error: string | null;
+            /** Feedback */
+            feedback: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Steps */
+            steps: components["schemas"]["RunStep"][];
+        };
+        /** RunStep */
+        RunStep: {
+            /** Node Id */
+            node_id: string;
+            /** Status */
+            status: string;
+            /** Output */
+            output?: string | null;
+            /** Error */
+            error?: string | null;
+        };
+        /** RunSummary */
+        RunSummary: {
+            /** Id */
+            id: string;
+            /** Status */
+            status: string | null;
+            /** Input */
+            input: string | null;
+            /** Output */
+            output: string | null;
+            /** Error */
+            error: string | null;
+            /** Feedback */
+            feedback: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+        };
         /** ThreadCreate */
         ThreadCreate: {
             /** Title */
@@ -716,8 +813,12 @@ export interface components {
         ToolRead: {
             /** Name */
             name: string;
+            /** Label */
+            label: string;
             /** Description */
             description: string;
+            /** Example Args */
+            example_args: string;
         };
         /**
          * UIMessage
@@ -1626,6 +1727,39 @@ export interface operations {
             };
         };
     };
+    list_workflow_runs_api_v1_workflows__workflow_id__runs_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_providers_api_v1_providers_get: {
         parameters: {
             query?: never;
@@ -1796,6 +1930,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModelTestResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_run_api_v1_runs__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunDetail"];
                 };
             };
             /** @description Validation Error */

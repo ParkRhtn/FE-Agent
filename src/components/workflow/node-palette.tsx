@@ -3,7 +3,7 @@
 import { cn } from "cn";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
-import type { Agent, Tool } from "@/lib/api/client";
+import type { Agent } from "@/lib/api/client";
 import { NODE_META, type NodeData, type NodeKind } from "@/lib/workflow";
 
 /** 캔버스로 끌어다 놓을 때 쓰는 dataTransfer 형식 */
@@ -17,7 +17,7 @@ export type PaletteItem = {
   data?: NodeData;
 };
 
-function groups(tools: Tool[], agents: Agent[]): { title: string; items: PaletteItem[] }[] {
+function groups(agents: Agent[]): { title: string; items: PaletteItem[] }[] {
   const base = (kind: NodeKind): PaletteItem => ({
     key: kind,
     kind,
@@ -39,24 +39,12 @@ function groups(tools: Tool[], agents: Agent[]): { title: string; items: Palette
         ...(agents.length === 0 ? [base("agent")] : []),
       ],
     },
-    {
-      title: "도구",
-      items: tools.length
-        ? tools.map((t) => ({
-            key: `tool:${t.name}`,
-            kind: "tool" as const,
-            label: t.name,
-            description: t.description,
-            data: { tool: t.name },
-          }))
-        : [base("tool")],
-    },
+    { title: "도구", items: [base("tool")] },
     { title: "흐름", items: [base("condition"), base("end")] },
   ];
 }
 
 type NodePaletteProps = {
-  tools: Tool[];
   agents: Agent[];
   collapsed: boolean;
   disabled: boolean;
@@ -64,8 +52,8 @@ type NodePaletteProps = {
   onAdd: (item: PaletteItem) => void;
 };
 
-export function NodePalette({ tools, agents, collapsed, disabled, onToggle, onAdd }: NodePaletteProps) {
-  const sections = groups(tools, agents);
+export function NodePalette({ agents, collapsed, disabled, onToggle, onAdd }: NodePaletteProps) {
+  const sections = groups(agents);
   const dragProps = (item: PaletteItem) => ({
     draggable: !disabled,
     onDragStart: (e: React.DragEvent) => {

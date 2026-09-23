@@ -120,7 +120,7 @@ export function NodeConfig({
         <>
           <Field
             label="에이전트"
-            hint={agents.length === 0 ? "아직 에이전트가 없습니다. 에이전트 관리에서 먼저 만드세요." : undefined}
+            hint={agents.length === 0 ? "아직 에이전트가 없습니다. 대화 화면의 \"새 에이전트\"로 먼저 만드세요." : undefined}
           >
             <select
               value={str("agent_id")}
@@ -147,11 +147,19 @@ export function NodeConfig({
       {kind === "tool" && (
         <>
           <Field label="도구" hint={tools.find((t) => t.name === str("tool"))?.description}>
-            <select value={str("tool")} onChange={(e) => onChange({ tool: e.target.value })} className={inputClass}>
+            <select
+              value={str("tool")}
+              onChange={(e) => {
+                const tool = tools.find((t) => t.name === e.target.value);
+                // 도구를 바꾸면 그 도구가 받는 인자로 예시를 채운다
+                onChange({ tool: e.target.value, tool_label: tool?.label ?? "", args: tool?.example_args ?? "{}" });
+              }}
+              className={inputClass}
+            >
               <option value="">선택하세요</option>
               {tools.map((t) => (
                 <option key={t.name} value={t.name}>
-                  {t.name}
+                  {t.label}
                 </option>
               ))}
             </select>
@@ -160,8 +168,8 @@ export function NodeConfig({
             label="인자"
             hint={
               <>
-                JSON 객체로 적습니다. 값에 변수를 넣을 수 있습니다. 예:{" "}
-                <code className="bg-muted rounded px-1">{'{"timezone": "{{input}}"}'}</code>
+                도구에 넘길 값입니다. 도구를 고르면 예시가 채워집니다. 값에{" "}
+                <code className="bg-muted rounded px-1">{"{{input}}"}</code> 같은 변수를 넣을 수 있습니다.
               </>
             }
           >

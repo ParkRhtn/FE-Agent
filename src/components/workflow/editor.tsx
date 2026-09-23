@@ -25,6 +25,7 @@ import { FeedbackButtons } from "@/components/feedback-buttons";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { NodeConfig } from "@/components/workflow/node-config";
+import { RunHistory } from "@/components/workflow/run-history";
 import { DRAG_TYPE, NodePalette, type PaletteItem } from "@/components/workflow/node-palette";
 import { nodeTypes, StatusIcon } from "@/components/workflow/nodes";
 import { api, type Agent, type ModelOption, type Tool } from "@/lib/api/client";
@@ -66,7 +67,7 @@ type RunState = {
   output?: string;
   errors?: string[];
 };
-type Panel = "config" | "run";
+type Panel = "config" | "run" | "history";
 
 const TAKEN_EDGE = "#10b981";
 
@@ -98,6 +99,9 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
   const [run, setRun] = useState<RunState>({ status: "idle" });
   const [steps, setSteps] = useState<Step[]>([]);
   const [runId, setRunId] = useState<string | null>(null); // 평가를 남길 실행 ID
+  const [runFeedback, setRunFeedback] = useState<number | null>(null);
+  const [pastRunAt, setPastRunAt] = useState<string | null>(null); // 지난 실행을 보는 중이면 그 시각
+  const [historyKey, setHistoryKey] = useState(0); // 실행이 끝나면 기록 목록을 다시 불러온다
   const [expanded, setExpanded] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -270,11 +274,50 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
     }
   };
 
+  const showPastRun = async (id: string) => {
+    const { data } = await api.GET("/api/v1/runs/{run_id}", { params: { path: { run_id: id } } });
+    if (!data) return;
+    const known = new Set(nodes.map((n) => n.id)); // 그 뒤 지운 노드는 빼고 보여 준다
+    setSteps(
+      data.steps
+        .filter((s) => known.has(s.node_id))
+        .map((s) => ({
+          id: s.node_id,
+          status: s.status as RunStatus,
+          output: s.output ?? undefined,
+          error: s.error ?? undefined,
+        })),
+    );
+    setRun(
+      data.status === "done"
+        ? { status: "done", output: data.output ?? "" }
+        : {
+            status: "error",
+            errors: [data.status === "error" ? (data.error ?? "실패한 실행입니다.") : "중간에 중지된 실행입니다."],
+          },
+    );
+    setInput(data.input ?? "");
+    setRunId(data.id);
+    setRunFeedback(data.feedback ?? null);
+    setPastRunAt(data.created_at);
+    setExpanded(null);
+    setPanel("run");
+  };
+
+  const clearPastRun = () => {
+    setSteps([]);
+    setRun({ status: "idle" });
+    setRunId(null);
+    setPastRunAt(null);
+  };
+
   const execute = async () => {
     setPanel("run");
     if (dirty && !(await save())) return;
     setSteps([]);
     setRunId(null);
+    setRunFeedback(null);
+    setPastRunAt(null);
     setExpanded(null);
     setRun({ status: "running" });
     const controller = new AbortController();
@@ -324,6 +367,7 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
       });
     } finally {
       abortRef.current = null;
+      setHistoryKey((k) => k + 1);
     }
   };
 
@@ -388,7 +432,6 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
 
       <div className="flex min-h-0 flex-1">
         <NodePalette
-          tools={tools}
           agents={agents}
           collapsed={paletteCollapsed}
           disabled={running}
@@ -444,6 +487,7 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
                 [
                   ["config", "설정"],
                   ["run", "실행"],
+                  ["history", "기록"],
                 ] as const
               ).map(([value, label]) => (
                 <button
@@ -505,8 +549,28 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
                   </div>
                 ))}
 
+              {panel === "history" && (
+                <RunHistory
+                  workflowId={workflow.id}
+                  refreshKey={historyKey}
+                  activeId={pastRunAt ? runId : null}
+                  onSelect={showPastRun}
+                />
+              )}
+
               {panel === "run" && (
                 <>
+                  {pastRunAt && (
+                    <div className="bg-muted flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs">
+                      <span>
+                        {new Date(pastRunAt).toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" })} 실행
+                        결과를 보고 있습니다.
+                      </span>
+                      <button type="button" onClick={clearPastRun} className="font-medium hover:underline">
+                        지우기
+                      </button>
+                    </div>
+                  )}
                   <div className="flex flex-col gap-2">
                     <label htmlFor="run-input" className="text-xs font-medium">
                       입력
@@ -608,7 +672,7 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
                       {runId && (
                         <div className="flex items-center justify-between gap-2 border-t border-emerald-200 pt-2">
                           <span className="text-muted-foreground text-xs">이 결과는 어땠나요?</span>
-                          <FeedbackButtons key={runId} runId={runId} />
+                          <FeedbackButtons key={runId} runId={runId} initial={runFeedback} />
                         </div>
                       )}
                     </div>
