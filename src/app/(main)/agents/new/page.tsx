@@ -6,8 +6,7 @@ export default async function NewAgentPage() {
 
   return (
     <AgentForm
-      models={models.data?.allowed ?? []}
-      defaultModel={models.data?.default ?? ""}
+      models={models.data?.options ?? []}
       tools={tools.data ?? []}
     />
   );

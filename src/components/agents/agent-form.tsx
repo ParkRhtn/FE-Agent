@@ -6,18 +6,18 @@ import { useState, useTransition } from "react";
 import { NewThreadButton } from "@/components/new-thread-button";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { api, type Agent, type Tool } from "@/lib/api/client";
+import { ModelSelect } from "@/components/model-select";
+import { api, type Agent, type ModelOption, type Tool } from "@/lib/api/client";
 
 type AgentFormProps = {
   agent?: Agent;
-  models: string[];
-  defaultModel: string;
+  models: ModelOption[];
   tools: Tool[];
 };
 
 const inputClass = "bg-background w-full rounded-lg border px-2.5 py-1.5 text-sm";
 
-export function AgentForm({ agent, models, defaultModel, tools }: AgentFormProps) {
+export function AgentForm({ agent, models, tools }: AgentFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +25,7 @@ export function AgentForm({ agent, models, defaultModel, tools }: AgentFormProps
     name: agent?.name ?? "",
     description: agent?.description ?? "",
     system_prompt: agent?.system_prompt ?? "",
-    model: agent?.model ?? defaultModel,
+    model: agent?.model ?? "",
     tools: agent?.tools ?? tools.map((t) => t.name),
   });
 
@@ -38,7 +38,7 @@ export function AgentForm({ agent, models, defaultModel, tools }: AgentFormProps
   const save = () =>
     startTransition(async () => {
       setError(null);
-      const body = { ...form, description: form.description || null };
+      const body = { ...form, description: form.description || null, model: form.model || null };
       const { data, error } = agent
         ? await api.PATCH("/api/v1/agents/{agent_id}", { params: { path: { agent_id: agent.id } }, body })
         : await api.POST("/api/v1/agents", { body });
@@ -100,13 +100,13 @@ export function AgentForm({ agent, models, defaultModel, tools }: AgentFormProps
 
       <label className="flex flex-col gap-1.5 text-sm font-medium">
         모델
-        <select value={form.model} onChange={(e) => set("model", e.target.value)} className={inputClass}>
-          {models.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
+        <ModelSelect
+          options={models}
+          value={form.model}
+          onChange={(value) => set("model", value)}
+          defaultOption={{ label: "기본 모델 (설정에서 정한 모델)" }}
+          className={inputClass}
+        />
       </label>
 
       <fieldset className="flex flex-col gap-2">

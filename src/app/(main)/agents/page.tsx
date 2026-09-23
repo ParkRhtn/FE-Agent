@@ -3,9 +3,13 @@ import Link from "next/link";
 import { NewThreadButton } from "@/components/new-thread-button";
 import { buttonVariants } from "@/components/ui/button";
 import { backend } from "@/lib/api/server";
+import { modelLabel } from "@/lib/models";
 
 export default async function AgentsPage() {
-  const { data: agents = [] } = await backend.GET("/api/v1/agents");
+  const [{ data: agents = [] }, { data: models }] = await Promise.all([
+    backend.GET("/api/v1/agents"),
+    backend.GET("/api/v1/models"),
+  ]);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6">
@@ -32,7 +36,7 @@ export default async function AgentsPage() {
               </span>
             </Link>
             <div className="text-muted-foreground flex flex-wrap gap-1 text-xs">
-              <span className="bg-muted rounded px-1.5 py-0.5">{agent.model ?? "기본 모델"}</span>
+              <span className="bg-muted rounded px-1.5 py-0.5">{modelLabel(models?.options ?? [], agent.model) ?? "기본 모델"}</span>
               <span className="bg-muted rounded px-1.5 py-0.5">도구 {agent.tools.length}개</span>
             </div>
             <NewThreadButton agentId={agent.id} label="대화 시작" variant="outline" />

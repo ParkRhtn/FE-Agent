@@ -122,6 +122,14 @@ function WorkflowNodeView({ id, type, data, selected }: NodeProps<FlowNode>) {
         <Summary kind={kind} data={data} />
       </p>
 
+      {kind === "llm" && (
+        <div className="-mt-1.5 px-3 pb-3">
+          <span className="rounded bg-violet-50 px-1.5 py-0.5 text-[11px] text-violet-700">
+            {str(data, "model_label") || "기본 모델"}
+          </span>
+        </div>
+      )}
+
       {showOutput && (
         <p className="bg-muted/70 mx-3 mb-3 line-clamp-2 rounded-md px-2 py-1.5 text-[11px] leading-relaxed break-words">
           {data._output || <span className="text-muted-foreground">…</span>}

@@ -26,7 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { NodeConfig } from "@/components/workflow/node-config";
 import { DRAG_TYPE, NodePalette, type PaletteItem } from "@/components/workflow/node-palette";
 import { nodeTypes, StatusIcon } from "@/components/workflow/nodes";
-import { api, type Agent, type Tool } from "@/lib/api/client";
+import { api, type Agent, type ModelOption, type Tool } from "@/lib/api/client";
 import {
   fromFlow,
   NODE_META,
@@ -43,8 +43,8 @@ import {
 
 type EditorProps = {
   workflow: Workflow;
-  models: string[];
-  defaultModel: string;
+  models: ModelOption[];
+  defaultModel: string | null;
   tools: Tool[];
   agents: Agent[];
 };
@@ -407,6 +407,7 @@ function Editor({ workflow, models, defaultModel, tools, agents }: EditorProps) 
       <div className="flex min-h-0 flex-1">
         <NodePalette
           tools={tools}
+          models={models}
           agents={agents}
           collapsed={paletteCollapsed}
           disabled={running}

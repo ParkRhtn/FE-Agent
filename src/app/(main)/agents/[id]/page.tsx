@@ -17,8 +17,7 @@ export default async function AgentPage({ params }: PageProps<"/agents/[id]">) {
     <AgentForm
       key={agent.data.updated_at}
       agent={agent.data}
-      models={models.data?.allowed ?? []}
-      defaultModel={models.data?.default ?? ""}
+      models={models.data?.options ?? []}
       tools={tools.data ?? []}
     />
   );

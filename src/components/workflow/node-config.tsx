@@ -5,7 +5,9 @@ import { Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { Textarea } from "@/components/ui/textarea";
-import type { Agent, Tool } from "@/lib/api/client";
+import { ModelSelect } from "@/components/model-select";
+import type { Agent, ModelOption, Tool } from "@/lib/api/client";
+import { modelLabel } from "@/lib/models";
 import { CONDITION_OPERATORS, NODE_META, type FlowNode, type NodeData, type NodeKind } from "@/lib/workflow";
 
 const inputClass =
@@ -14,8 +16,8 @@ const inputClass =
 type NodeConfigProps = {
   node: FlowNode;
   variables: string[];
-  models: string[];
-  defaultModel: string;
+  models: ModelOption[];
+  defaultModel: string | null;
   tools: Tool[];
   agents: Agent[];
   onChange: (patch: NodeData) => void;
@@ -32,7 +34,16 @@ function Field({ label, hint, children }: { label: string; hint?: React.ReactNod
   );
 }
 
-export function NodeConfig({ node, variables, models, defaultModel, tools, agents, onChange, onDelete }: NodeConfigProps) {
+export function NodeConfig({
+  node,
+  variables,
+  models,
+  defaultModel,
+  tools,
+  agents,
+  onChange,
+  onDelete,
+}: NodeConfigProps) {
   const kind = node.type as NodeKind;
   const meta = NODE_META[kind];
   const Icon = meta.icon;
@@ -88,16 +99,17 @@ export function NodeConfig({ node, variables, models, defaultModel, tools, agent
       {kind === "llm" && (
         <>
           <Field label="모델">
-            <select value={str("model")} onChange={(e) => onChange({ model: e.target.value })} className={inputClass}>
-              <option value="">기본 모델 ({defaultModel})</option>
-              {models.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
+            <ModelSelect
+              options={models}
+              value={str("model")}
+              onChange={(value) => onChange({ model: value, model_label: modelLabel(models, value) ?? "" })}
+              defaultOption={{ label: `기본 모델 (${modelLabel(models, defaultModel) ?? "없음"})` }}
+              className={inputClass}
+            />
           </Field>
-          <Field label="프롬프트">{templateField("prompt", { rows: 6, placeholder: "다음 내용을 요약해: {{input}}" })}</Field>
+          <Field label="프롬프트">
+            {templateField("prompt", { rows: 6, placeholder: "다음 내용을 요약해: {{input}}" })}
+          </Field>
           <Field label="시스템 프롬프트" hint="모델의 역할이나 말투를 정합니다. 비워도 됩니다.">
             {templateField("system", { rows: 3 })}
           </Field>
@@ -176,8 +188,8 @@ export function NodeConfig({ node, variables, models, defaultModel, tools, agent
           </Field>
           {operator?.needsRight && <Field label="비교할 값">{templateField("right")}</Field>}
           <p className="text-muted-foreground text-xs leading-relaxed">
-            노드 오른쪽의 <span className="text-emerald-600">참</span>·<span className="text-rose-600">거짓</span> 점에서
-            각각 다음 노드로 연결하세요.
+            노드 오른쪽의 <span className="text-emerald-600">참</span>·<span className="text-rose-600">거짓</span>{" "}
+            점에서 각각 다음 노드로 연결하세요.
           </p>
         </>
       )}
@@ -207,7 +219,9 @@ export function NodeConfig({ node, variables, models, defaultModel, tools, agent
             ))}
           </div>
           <span className="text-muted-foreground text-xs">
-            {canInsert ? "누르면 마지막으로 편집한 칸 끝에 넣습니다." : "입력 칸을 누른 뒤 변수를 골라 넣을 수 있습니다."}
+            {canInsert
+              ? "누르면 마지막으로 편집한 칸 끝에 넣습니다."
+              : "입력 칸을 누른 뒤 변수를 골라 넣을 수 있습니다."}
           </span>
         </div>
       )}

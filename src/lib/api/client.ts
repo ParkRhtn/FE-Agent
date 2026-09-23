@@ -26,3 +26,5 @@ export type Thread = components["schemas"]["ThreadRead"];
 export type Models = components["schemas"]["ModelsRead"];
 export type Agent = components["schemas"]["AgentRead"];
 export type Tool = components["schemas"]["ToolRead"];
+export type ModelOption = components["schemas"]["ModelOption"];
+export type Provider = components["schemas"]["ProviderRead"];

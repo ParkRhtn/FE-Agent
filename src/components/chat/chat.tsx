@@ -7,14 +7,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { MessageView } from "@/components/chat/message";
+import { ModelSelect } from "@/components/model-select";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import type { ModelOption } from "@/lib/api/client";
 
 type ChatProps = {
   threadId: string;
   initialMessages: UIMessage[];
   initialModel: string;
-  models: string[];
+  models: ModelOption[];
   agent?: { id: string; name: string };
 };
 
@@ -77,19 +79,14 @@ export function Chat({ threadId, initialMessages, initialModel, models, agent }:
         <label htmlFor="model" className="text-muted-foreground text-xs">
           모델
         </label>
-        <select
+        <ModelSelect
           id="model"
+          options={models}
           value={model}
-          onChange={(e) => setModel(e.target.value)}
+          onChange={setModel}
           disabled={busy}
           className="bg-background rounded-md border px-2 py-1 text-sm"
-        >
-          {models.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
+        />
       </header>
 
       <div className="flex-1 overflow-y-auto">

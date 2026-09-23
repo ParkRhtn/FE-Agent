@@ -17,8 +17,8 @@ export default async function WorkflowPage({ params }: PageProps<"/workflows/[id
   return (
     <WorkflowEditor
       workflow={workflow.data}
-      models={models.data?.allowed ?? []}
-      defaultModel={models.data?.default ?? ""}
+      models={models.data?.options ?? []}
+      defaultModel={models.data?.default ?? null}
       tools={tools.data ?? []}
       agents={agents.data ?? []}
     />

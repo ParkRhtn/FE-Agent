@@ -8,6 +8,7 @@ const NAV = [
   { href: "/workflows", label: "워크플로우" },
   { href: "/agents", label: "에이전트" },
   { href: "/chat", label: "대화" },
+  { href: "/settings", label: "설정" },
 ];
 
 export function TopNav() {

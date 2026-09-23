@@ -4,6 +4,11 @@ import { notFound } from "next/navigation";
 import { Chat } from "@/components/chat/chat";
 import { backend } from "@/lib/api/server";
 
+/** 저장된 모델이 지금은 없을 수 있으니, 쓸 수 있는 것 중 처음 맞는 것을 고른다 */
+function pickModel(options: { id: string }[], candidates: (string | null | undefined)[]): string {
+  return candidates.find((c) => c && options.some((o) => o.id === c)) ?? options[0]?.id ?? "";
+}
+
 export default async function ChatPage({ params }: PageProps<"/chat/[id]">) {
   const { id } = await params;
   const path = { params: { path: { thread_id: id } } };
@@ -14,6 +19,7 @@ export default async function ChatPage({ params }: PageProps<"/chat/[id]">) {
     backend.GET("/api/v1/models"),
   ]);
   if (!thread.data) notFound();
+  const options = models.data?.options ?? [];
 
   const agentId = thread.data.agent_id;
   const agent = agentId
@@ -24,9 +30,9 @@ export default async function ChatPage({ params }: PageProps<"/chat/[id]">) {
     <Chat
       threadId={id}
       initialMessages={(messages.data ?? []) as UIMessage[]}
-      initialModel={thread.data.model ?? agent?.model ?? models.data?.default ?? ""}
+      initialModel={pickModel(options, [thread.data.model, agent?.model, models.data?.default])}
       agent={agent ? { id: agent.id, name: agent.name } : undefined}
-      models={models.data?.allowed ?? []}
+      models={options}
     />
   );
 }
