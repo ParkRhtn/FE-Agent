@@ -339,6 +339,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/runs/{run_id}/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Feedback
+         * @description 채팅 답변·워크플로우 실행에 👍/👎. Langfuse 기록에는 user-feedback 점수로 붙는다.
+         */
+        put: operations["set_feedback_api_v1_runs__run_id__feedback_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Usage
+         * @description 최근 N일 모델 사용량과 비용 (Langfuse 집계).
+         */
+        get: operations["get_usage_api_v1_usage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tools": {
         parameters: {
             query?: never;
@@ -486,6 +526,23 @@ export interface components {
         DefaultModelUpdate: {
             /** Model */
             model: string;
+        };
+        /** FeedbackRead */
+        FeedbackRead: {
+            /** Run Id */
+            run_id: string;
+            /** Feedback */
+            feedback: number | null;
+        };
+        /** FeedbackUpdate */
+        FeedbackUpdate: {
+            /**
+             * Value
+             * @enum {integer}
+             */
+            value: 1 | -1;
+            /** Comment */
+            comment?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -678,6 +735,69 @@ export interface components {
             parts: {
                 [key: string]: unknown;
             }[];
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** UsageDay */
+        UsageDay: {
+            /** Date */
+            date: string;
+            /** Cost */
+            cost: number;
+            /** Tokens */
+            tokens: number;
+        };
+        /** UsageRead */
+        UsageRead: {
+            /** Enabled */
+            enabled: boolean;
+            /** Days */
+            days: number;
+            /**
+             * Total Cost
+             * @default 0
+             */
+            total_cost: number;
+            /**
+             * Total Tokens
+             * @default 0
+             */
+            total_tokens: number;
+            /**
+             * Calls
+             * @default 0
+             */
+            calls: number;
+            /**
+             * By Model
+             * @default []
+             */
+            by_model: components["schemas"]["UsageRow"][];
+            /**
+             * By Source
+             * @default []
+             */
+            by_source: components["schemas"]["UsageRow"][];
+            /**
+             * Daily
+             * @default []
+             */
+            daily: components["schemas"]["UsageDay"][];
+            /** Error */
+            error?: string | null;
+        };
+        /** UsageRow */
+        UsageRow: {
+            /** Name */
+            name: string;
+            /** Cost */
+            cost: number;
+            /** Tokens */
+            tokens: number;
+            /** Calls */
+            calls: number;
         };
         /** UserRead */
         UserRead: {
@@ -1676,6 +1796,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModelTestResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_feedback_api_v1_runs__run_id__feedback_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeedbackUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedbackRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_usage_api_v1_usage_get: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsageRead"];
                 };
             };
             /** @description Validation Error */

@@ -91,8 +91,8 @@ export function Chat({ threadId, initialMessages, initialModel, models, agent }:
 
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-6">
-          {messages.map((message) => (
-            <MessageView key={message.id} message={message} />
+          {messages.map((message, i) => (
+            <MessageView key={message.id} message={message} done={!(busy && i === messages.length - 1)} />
           ))}
           {status === "submitted" && <p className="text-muted-foreground text-sm">생각하는 중...</p>}
           {error && (

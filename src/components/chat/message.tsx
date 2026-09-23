@@ -1,6 +1,9 @@
 import { getToolOrDynamicToolName, isToolUIPart, type UIMessage } from "ai";
 
+import { FeedbackButtons } from "@/components/feedback-buttons";
 import { cn } from "@/lib/utils";
+
+type AnswerMetadata = { runId?: string; feedback?: number | null };
 
 type ToolPart = Extract<UIMessage["parts"][number], { toolCallId: string }>;
 
@@ -30,8 +33,9 @@ function ToolCallView({ part }: { part: ToolPart }) {
   );
 }
 
-export function MessageView({ message }: { message: UIMessage }) {
+export function MessageView({ message, done = true }: { message: UIMessage; done?: boolean }) {
   const isUser = message.role === "user";
+  const meta = (message.metadata ?? {}) as AnswerMetadata;
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
       <div
@@ -53,6 +57,10 @@ export function MessageView({ message }: { message: UIMessage }) {
           }
           return null;
         })}
+        {/* 실행 ID 가 있는 답변만 평가할 수 있다 (예전 대화에는 없다) */}
+        {!isUser && done && meta.runId && (
+          <FeedbackButtons key={meta.runId} runId={meta.runId} initial={meta.feedback} className="-ml-1" />
+        )}
       </div>
     </div>
   );
