@@ -1,0 +1,60 @@
+"use server";
+
+import { redirect } from "next/navigation";
+
+import { BACKEND_URL } from "@/lib/api/server";
+import { clearToken, setToken } from "@/lib/auth";
+
+export type AuthState = { error?: string; email?: string };
+
+function safeNext(value: FormDataEntryValue | null): string {
+  // 오픈 리다이렉트 방지: 같은 사이트의 경로만 허용
+  const next = typeof value === "string" ? value : "";
+  return next.startsWith("/") && !next.startsWith("//") ? next : "/";
+}
+
+async function authenticate(mode: "login" | "signup", formData: FormData): Promise<AuthState> {
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+
+  let response: Response;
+  try {
+    response = await fetch(new URL(`/api/v1/auth/${mode}`, BACKEND_URL), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      cache: "no-store",
+    });
+  } catch {
+    return { email, error: "백엔드에 연결할 수 없습니다." };
+  }
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    const detail = body?.detail;
+    const message =
+      typeof detail === "string"
+        ? detail
+        : response.status === 422
+          ? "이메일 형식과 비밀번호(8자 이상)를 확인하세요."
+          : "요청에 실패했습니다.";
+    return { email, error: message };
+  }
+
+  const { access_token, expires_in } = (await response.json()) as { access_token: string; expires_in: number };
+  await setToken(access_token, expires_in);
+  redirect(safeNext(formData.get("next")));
+}
+
+export async function login(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  return authenticate("login", formData);
+}
+
+export async function signup(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  return authenticate("signup", formData);
+}
+
+export async function logout(): Promise<void> {
+  await clearToken();
+  redirect("/login");
+}

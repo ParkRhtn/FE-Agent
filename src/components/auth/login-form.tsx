@@ -1,0 +1,65 @@
+"use client";
+
+import { useActionState, useState } from "react";
+
+import { login, signup, type AuthState } from "@/app/login/actions";
+import { Button } from "@/components/ui/button";
+
+const inputClass = "bg-background w-full rounded-lg border px-2.5 py-2 text-sm";
+
+export function LoginForm({ next }: { next?: string }) {
+  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [loginState, loginAction, loginPending] = useActionState<AuthState, FormData>(login, {});
+  const [signupState, signupAction, signupPending] = useActionState<AuthState, FormData>(signup, {});
+
+  const isLogin = mode === "login";
+  const state = isLogin ? loginState : signupState;
+  const pending = loginPending || signupPending;
+
+  return (
+    <form action={isLogin ? loginAction : signupAction} className="flex w-full max-w-sm flex-col gap-4">
+      <h1 className="text-center text-2xl font-semibold">{isLogin ? "로그인" : "회원가입"}</h1>
+      <input type="hidden" name="next" value={next ?? "/"} />
+
+      <label className="flex flex-col gap-1.5 text-sm font-medium">
+        이메일
+        <input
+          key={`email-${mode}`}
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          defaultValue={state.email}
+          className={inputClass}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1.5 text-sm font-medium">
+        비밀번호
+        <input
+          name="password"
+          type="password"
+          required
+          minLength={isLogin ? undefined : 8}
+          autoComplete={isLogin ? "current-password" : "new-password"}
+          className={inputClass}
+        />
+        {!isLogin && <span className="text-muted-foreground text-xs font-normal">8자 이상</span>}
+      </label>
+
+      {state.error && <p className="text-destructive text-sm">{state.error}</p>}
+
+      <Button type="submit" disabled={pending} size="lg">
+        {pending ? "처리 중..." : isLogin ? "로그인" : "가입하기"}
+      </Button>
+
+      <button
+        type="button"
+        onClick={() => setMode(isLogin ? "signup" : "login")}
+        className="text-muted-foreground text-sm hover:underline"
+      >
+        {isLogin ? "계정이 없으신가요? 회원가입" : "이미 계정이 있으신가요? 로그인"}
+      </button>
+    </form>
+  );
+}
