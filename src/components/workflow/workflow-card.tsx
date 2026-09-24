@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "cn";
+import { Clock, Lock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -8,6 +9,7 @@ import { useState, useTransition } from "react";
 import { WorkflowCardMenu } from "@/components/workflow/workflow-card-menu";
 import { WorkflowThumbnail } from "@/components/workflow/workflow-thumbnail";
 import { api } from "@/lib/api/client";
+import { scheduleLabel } from "@/lib/schedule";
 import { NODE_META, type NodeKind, type Workflow } from "@/lib/workflow";
 
 const STEP_KINDS: NodeKind[] = ["llm", "agent", "tool", "condition"];
@@ -81,7 +83,20 @@ export function WorkflowCard({ workflow, updatedLabel }: { workflow: Workflow; u
               {name}
             </Link>
           )}
-          <span className="text-muted-foreground text-xs">{updatedLabel} 수정</span>
+          <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+            {workflow.delete_protected && (
+              <Lock className="size-3 shrink-0" aria-label="삭제 보호 중">
+                <title>삭제 보호 중</title>
+              </Lock>
+            )}
+            {updatedLabel} 수정
+            {workflow.schedule?.enabled && (
+              <span className="flex items-center gap-0.5 font-medium text-emerald-700">
+                <Clock className="size-3" />
+                {scheduleLabel(workflow.schedule)}
+              </span>
+            )}
+          </span>
         </div>
         <div className="flex gap-1 overflow-hidden">
           {counts.length === 0 && <span className="text-muted-foreground text-xs">아직 단계가 없습니다</span>}
@@ -107,6 +122,7 @@ export function WorkflowCard({ workflow, updatedLabel }: { workflow: Workflow; u
           id={workflow.id}
           name={workflow.name}
           graph={workflow.graph}
+          deleteProtected={workflow.delete_protected ?? false}
           onRename={() => setEditing(true)}
         />
       </div>

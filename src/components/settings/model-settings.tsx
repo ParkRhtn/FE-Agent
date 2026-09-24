@@ -35,14 +35,14 @@ const KINDS: { value: Kind; label: string; hint: string; mark: string; tile: str
   },
 ];
 
-const inputClass =
+export const inputClass =
   "bg-background focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-lg border px-2.5 py-1.5 text-sm outline-none focus-visible:ring-3";
 
 function kindMeta(kind: string) {
   return KINDS.find((k) => k.value === kind) ?? KINDS[2];
 }
 
-function errorText(error: unknown, fallback: string): string {
+export function errorText(error: unknown, fallback: string): string {
   const detail = (error as { detail?: unknown } | undefined)?.detail;
   return typeof detail === "string" ? detail : fallback;
 }

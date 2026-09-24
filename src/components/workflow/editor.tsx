@@ -16,7 +16,7 @@ import {
   type Edge,
 } from "@xyflow/react";
 import { cn } from "cn";
-import { ChevronRight, Pencil, Play, Square, Trash2, X } from "lucide-react";
+import { ChevronRight, Clock, Lock, LockOpen, Pencil, Play, Square, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { NodeConfig } from "@/components/workflow/node-config";
 import { RunHistory } from "@/components/workflow/run-history";
+import { SchedulePanel } from "@/components/workflow/schedule-panel";
 import { DRAG_TYPE, NodePalette, type PaletteItem } from "@/components/workflow/node-palette";
 import { nodeTypes, StatusIcon } from "@/components/workflow/nodes";
 import { api, type Agent, type ModelOption, type Tool } from "@/lib/api/client";
@@ -42,6 +43,7 @@ import {
   type RunStatus,
   type Workflow,
 } from "@/lib/workflow";
+import { nextRunLabel, scheduleLabel } from "@/lib/schedule";
 import { useStoredFlag } from "@/lib/use-stored-flag";
 
 type EditorProps = {
@@ -67,7 +69,7 @@ type RunState = {
   output?: string;
   errors?: string[];
 };
-type Panel = "config" | "run" | "history";
+type Panel = "config" | "run" | "history" | "schedule";
 
 const TAKEN_EDGE = "#10b981";
 
@@ -103,6 +105,9 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
   const [pastRunAt, setPastRunAt] = useState<string | null>(null); // 지난 실행을 보는 중이면 그 시각
   const [historyKey, setHistoryKey] = useState(0); // 실행이 끝나면 기록 목록을 다시 불러온다
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [schedule, setSchedule] = useState(workflow.schedule ?? null);
+  const [nextRunAt, setNextRunAt] = useState(workflow.next_run_at ?? null);
+  const [deleteProtected, setDeleteProtected] = useState(workflow.delete_protected ?? false);
   const abortRef = useRef<AbortController | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -213,7 +218,18 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
     return true;
   };
 
+  const toggleProtection = async () => {
+    const next = !deleteProtected;
+    setDeleteProtected(next);
+    const { error } = await api.PATCH("/api/v1/workflows/{workflow_id}", {
+      params: { path: { workflow_id: workflow.id } },
+      body: { delete_protected: next },
+    });
+    if (error) setDeleteProtected(!next);
+  };
+
   const remove = async () => {
+    if (deleteProtected) return;
     if (!confirm(`'${name}' 워크플로우를 삭제할까요? 되돌릴 수 없습니다.`)) return;
     await api.DELETE("/api/v1/workflows/{workflow_id}", {
       params: { path: { workflow_id: workflow.id } },
@@ -401,9 +417,41 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
         <span className="flex-1" />
         <button
           type="button"
+          onClick={() => setPanel(panel === "schedule" ? null : "schedule")}
+          aria-pressed={panel === "schedule"}
+          title={schedule?.enabled && nextRunAt ? `다음 실행: ${nextRunLabel(nextRunAt)}` : "예약 실행 설정"}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs",
+            schedule?.enabled
+              ? "bg-emerald-50 font-medium text-emerald-800 hover:bg-emerald-100"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          )}
+        >
+          <Clock className="size-3.5" />
+          {schedule?.enabled ? scheduleLabel(schedule) : "예약"}
+        </button>
+        <button
+          type="button"
+          onClick={toggleProtection}
+          aria-pressed={deleteProtected}
+          aria-label={deleteProtected ? "삭제 보호 풀기" : "삭제 보호 켜기"}
+          title={deleteProtected ? "삭제 보호 중 (눌러서 풀기)" : "삭제 보호 켜기"}
+          className={cn(
+            "rounded-md p-1.5",
+            deleteProtected
+              ? "bg-amber-50 text-amber-700 hover:bg-amber-100"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          )}
+        >
+          {deleteProtected ? <Lock className="size-4" /> : <LockOpen className="size-4" />}
+        </button>
+        <button
+          type="button"
           onClick={remove}
+          disabled={deleteProtected}
           aria-label="워크플로우 삭제"
-          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md p-1.5"
+          title={deleteProtected ? "삭제 보호 중에는 지울 수 없습니다" : "워크플로우 삭제"}
+          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md p-1.5 disabled:pointer-events-none disabled:opacity-30"
         >
           <Trash2 className="size-4" />
         </button>
@@ -488,6 +536,7 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
                   ["config", "설정"],
                   ["run", "실행"],
                   ["history", "기록"],
+                  ["schedule", "예약"],
                 ] as const
               ).map(([value, label]) => (
                 <button
@@ -548,6 +597,20 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
                     </ul>
                   </div>
                 ))}
+
+              {panel === "schedule" && (
+                <SchedulePanel
+                  workflowId={workflow.id}
+                  schedule={schedule}
+                  nextRunAt={nextRunAt}
+                  hasTelegramNode={nodes.some((n) => n.type === "tool" && n.data.tool === "send_telegram")}
+                  onSaved={(saved) => {
+                    setSchedule(saved.schedule);
+                    setNextRunAt(saved.nextRunAt);
+                    router.refresh();
+                  }}
+                />
+              )}
 
               {panel === "history" && (
                 <RunHistory

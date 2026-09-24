@@ -1,6 +1,6 @@
 "use client";
 
-import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { Clock, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { StatusIcon } from "@/components/workflow/nodes";
@@ -84,6 +84,12 @@ export function RunHistory({
                 <StatusIcon status={status.icon} className="size-3.5" />
                 <span className="font-medium">{status.label}</span>
                 <span className="text-muted-foreground">{when(run.created_at)}</span>
+                {run.trigger === "schedule" && (
+                  <span className="flex items-center gap-0.5 rounded bg-emerald-50 px-1 text-[11px] text-emerald-800">
+                    <Clock className="size-3" />
+                    예약
+                  </span>
+                )}
                 {took && <span className="text-muted-foreground tabular-nums">{took}</span>}
                 {run.feedback === 1 && <ThumbsUp className="ml-auto size-3.5 fill-current text-emerald-600" />}
                 {run.feedback === -1 && <ThumbsDown className="ml-auto size-3.5 fill-current text-rose-600" />}

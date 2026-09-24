@@ -408,11 +408,50 @@ export interface paths {
         };
         /**
          * Get Usage
-         * @description 최근 N일 모델 사용량과 비용 (Langfuse 집계).
+         * @description 최근 N일 모델 사용량과 비용. 모델 호출마다 남긴 기록을 모은다.
          */
         get: operations["get_usage_api_v1_usage_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/telegram": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Telegram */
+        get: operations["get_telegram_api_v1_integrations_telegram_get"];
+        /**
+         * Connect Telegram
+         * @description 토큰을 확인하고, 봇에게 말을 건 내 채팅을 찾아 연결한다. 연결되면 확인 메시지를 보낸다.
+         */
+        put: operations["connect_telegram_api_v1_integrations_telegram_put"];
+        post?: never;
+        /** Disconnect Telegram */
+        delete: operations["disconnect_telegram_api_v1_integrations_telegram_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/telegram/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Telegram */
+        post: operations["test_telegram_api_v1_integrations_telegram_test_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -707,6 +746,8 @@ export interface components {
         RunDetail: {
             /** Id */
             id: string;
+            /** Trigger */
+            trigger?: string | null;
             /** Status */
             status: string | null;
             /** Input */
@@ -742,6 +783,8 @@ export interface components {
         RunSummary: {
             /** Id */
             id: string;
+            /** Trigger */
+            trigger?: string | null;
             /** Status */
             status: string | null;
             /** Input */
@@ -759,6 +802,22 @@ export interface components {
             created_at: string;
             /** Finished At */
             finished_at: string | null;
+        };
+        /** TelegramConnect */
+        TelegramConnect: {
+            /** Bot Token */
+            bot_token: string;
+        };
+        /** TelegramStatus */
+        TelegramStatus: {
+            /** Connected */
+            connected: boolean;
+            /** Bot Username */
+            bot_username?: string | null;
+            /** Chat Name */
+            chat_name?: string | null;
+            /** Token Hint */
+            token_hint?: string | null;
         };
         /** ThreadCreate */
         ThreadCreate: {
@@ -852,7 +911,10 @@ export interface components {
         };
         /** UsageRead */
         UsageRead: {
-            /** Enabled */
+            /**
+             * Enabled
+             * @default true
+             */
             enabled: boolean;
             /** Days */
             days: number;
@@ -871,6 +933,11 @@ export interface components {
              * @default 0
              */
             calls: number;
+            /**
+             * Unpriced Calls
+             * @default 0
+             */
+            unpriced_calls: number;
             /**
              * By Model
              * @default []
@@ -899,6 +966,11 @@ export interface components {
             tokens: number;
             /** Calls */
             calls: number;
+            /**
+             * Unpriced Calls
+             * @default 0
+             */
+            unpriced_calls: number;
         };
         /** UserRead */
         UserRead: {
@@ -987,6 +1059,12 @@ export interface components {
             /** Description */
             description: string | null;
             graph: components["schemas"]["WorkflowGraph"];
+            schedule?: components["schemas"]["WorkflowSchedule"] | null;
+            /**
+             * Delete Protected
+             * @default false
+             */
+            delete_protected: boolean;
             /**
              * Created At
              * Format: date-time
@@ -997,9 +1075,48 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /**
+             * Next Run At
+             * @description 다음 예약 실행 시각
+             */
+            readonly next_run_at: string | null;
         };
         /** WorkflowRunRequest */
         WorkflowRunRequest: {
+            /**
+             * Input
+             * @default
+             */
+            input: string;
+        };
+        /**
+         * WorkflowSchedule
+         * @description 예약 실행. 한국 시간 기준.
+         */
+        WorkflowSchedule: {
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /**
+             * Time
+             * @example 08:00
+             */
+            time: string;
+            /**
+             * Weekdays
+             * @default [
+             *       0,
+             *       1,
+             *       2,
+             *       3,
+             *       4,
+             *       5,
+             *       6
+             *     ]
+             */
+            weekdays: number[];
             /**
              * Input
              * @default
@@ -1013,6 +1130,9 @@ export interface components {
             /** Description */
             description?: string | null;
             graph?: components["schemas"]["WorkflowGraph"] | null;
+            schedule?: components["schemas"]["WorkflowSchedule"] | null;
+            /** Delete Protected */
+            delete_protected?: boolean | null;
         };
     };
     responses: never;
@@ -2037,6 +2157,95 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+        };
+    };
+    get_telegram_api_v1_integrations_telegram_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TelegramStatus"];
+                };
+            };
+        };
+    };
+    connect_telegram_api_v1_integrations_telegram_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TelegramConnect"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TelegramStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disconnect_telegram_api_v1_integrations_telegram_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    test_telegram_api_v1_integrations_telegram_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

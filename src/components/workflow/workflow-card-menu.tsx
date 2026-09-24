@@ -1,7 +1,7 @@
 "use client";
 
 import { Menu } from "@base-ui/react/menu";
-import { Copy, Ellipsis, ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { Copy, Ellipsis, ExternalLink, Lock, LockOpen, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
@@ -11,15 +11,30 @@ import type { WorkflowGraph } from "@/lib/workflow";
 const itemClass =
   "flex cursor-default items-center gap-2 rounded-md px-2.5 py-1.5 text-sm outline-hidden select-none data-highlighted:bg-muted";
 
-type WorkflowCardMenuProps = { id: string; name: string; graph: WorkflowGraph; onRename: () => void };
+type WorkflowCardMenuProps = {
+  id: string;
+  name: string;
+  graph: WorkflowGraph;
+  deleteProtected: boolean;
+  onRename: () => void;
+};
 
-export function WorkflowCardMenu({ id, name, graph, onRename }: WorkflowCardMenuProps) {
+export function WorkflowCardMenu({ id, name, graph, deleteProtected, onRename }: WorkflowCardMenuProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   const duplicate = () =>
     startTransition(async () => {
       await api.POST("/api/v1/workflows", { body: { name: `${name} 복사본`.slice(0, 100), graph } });
+      router.refresh();
+    });
+
+  const toggleProtection = () =>
+    startTransition(async () => {
+      await api.PATCH("/api/v1/workflows/{workflow_id}", {
+        params: { path: { workflow_id: id } },
+        body: { delete_protected: !deleteProtected },
+      });
       router.refresh();
     });
 
@@ -55,10 +70,22 @@ export function WorkflowCardMenu({ id, name, graph, onRename }: WorkflowCardMenu
               <Copy className="text-muted-foreground size-4" />
               복제
             </Menu.Item>
+            <Menu.Item className={itemClass} onClick={toggleProtection}>
+              {deleteProtected ? (
+                <LockOpen className="text-muted-foreground size-4" />
+              ) : (
+                <Lock className="text-muted-foreground size-4" />
+              )}
+              {deleteProtected ? "삭제 보호 풀기" : "삭제 보호"}
+            </Menu.Item>
             <Menu.Separator className="bg-border mx-1 my-1 h-px" />
-            <Menu.Item className={`${itemClass} text-destructive data-highlighted:bg-destructive/10`} onClick={remove}>
+            <Menu.Item
+              disabled={deleteProtected}
+              className={`${itemClass} text-destructive data-highlighted:bg-destructive/10 data-disabled:text-muted-foreground data-disabled:opacity-60`}
+              onClick={remove}
+            >
               <Trash2 className="size-4" />
-              삭제
+              {deleteProtected ? "삭제 (보호 중)" : "삭제"}
             </Menu.Item>
           </Menu.Popup>
         </Menu.Positioner>

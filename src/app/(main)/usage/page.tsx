@@ -35,6 +35,7 @@ function Breakdown({ title, rows, empty }: { title: string; rows: Row[]; empty: 
               </span>
               <span className="text-xs text-zinc-500">
                 호출 {formatNumber(r.calls)}번, 토큰 {formatNumber(r.tokens)}개
+                {r.unpriced_calls ? `, 가격 정보 없음 ${formatNumber(r.unpriced_calls)}번` : ""}
               </span>
             </li>
           ))}
@@ -71,14 +72,10 @@ export default async function UsagePage({ searchParams }: PageProps<"/usage">) {
           </nav>
         </header>
 
-        {!usage || !usage.enabled ? (
-          <section className="flex flex-col gap-2 border-y py-8 text-sm">
-            <p className="font-medium">사용량을 보려면 Langfuse 를 연결하세요.</p>
-            <p className="max-w-prose text-zinc-500">
-              BE-Agent 의 .env 에 LANGFUSE_PUBLIC_KEY 와 LANGFUSE_SECRET_KEY 를 넣고 서버를 다시 시작하면, 그때부터 모델
-              호출이 기록되고 여기에 모입니다.
-            </p>
-          </section>
+        {!usage ? (
+          <p className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-4 text-sm">
+            사용량을 불러오지 못했습니다. 잠시 뒤에 다시 열어 보세요.
+          </p>
         ) : usage.error ? (
           <p className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-4 text-sm">
             {usage.error}
@@ -100,7 +97,10 @@ export default async function UsagePage({ searchParams }: PageProps<"/usage">) {
                 )}
               </p>
               <p className="text-xs text-zinc-400">
-                금액은 Langfuse 가 모델 가격으로 계산한 달러 값이며, 몇 분 늦게 반영될 수 있습니다.
+                금액은 호출할 때 받은 토큰 수에 모델별 가격을 곱한 달러 값입니다.
+                {usage.unpriced_calls ? (
+                  <> 가격을 모르는 모델 호출 {formatNumber(usage.unpriced_calls)}번은 금액에 들어가지 않았습니다.</>
+                ) : null}
               </p>
             </section>
 
