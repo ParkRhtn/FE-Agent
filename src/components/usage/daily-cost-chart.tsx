@@ -15,6 +15,14 @@ function shortDate(date: string) {
   return `${Number(m)}월 ${Number(d)}일`;
 }
 
+const WEEKDAYS = "일월화수목금토";
+
+/** "9월 24일 (목)". date 는 YYYY-MM-DD (한국 날짜) */
+function dateWithWeekday(date: string) {
+  const [y, m, d] = date.split("-").map(Number);
+  return `${shortDate(date)} (${WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]})`;
+}
+
 /** 날마다 바닥에 점을 찍고, 비용이 있는 날만 막대를 세운다. 가장 큰 막대 위에만 금액을 적는다. */
 export function DailyCostChart({ days }: { days: Day[] }) {
   const [active, setActive] = useState<number | null>(null);
@@ -23,6 +31,10 @@ export function DailyCostChart({ days }: { days: Day[] }) {
   const peak = max > 0 ? days.findIndex((d) => d.cost === max) : -1;
   const hovered = active !== null ? days[active] : null;
   const edges = new Set([0, Math.floor((days.length - 1) / 2), days.length - 1]);
+  // 칸이 넓으면(7일) 글자를 막대 가운데에 맞춘다. 좁으면(30·90일) 가장자리 글자가 넘치지 않게 안쪽으로 붙인다.
+  const roomy = days.length <= 14;
+  const align = (i: number) =>
+    roomy || (i > 0 && i < days.length - 1) ? "center" : i === 0 ? "start" : "end";
 
   return (
     <div className="flex flex-col gap-2">
@@ -57,8 +69,12 @@ export function DailyCostChart({ days }: { days: Day[] }) {
                 <span
                   className={cn(
                     "absolute bottom-full mb-1 text-[11px] font-medium whitespace-nowrap text-zinc-700 tabular-nums",
-                    // 가장자리 막대면 금액을 안쪽으로 붙인다
-                    i > days.length * 0.85 ? "right-0" : i < days.length * 0.15 ? "left-0" : "",
+                    // 좁은 칸의 가장자리 막대면 금액을 안쪽으로 붙인다
+                    !roomy && i > days.length * 0.85
+                      ? "right-0"
+                      : !roomy && i < days.length * 0.15
+                        ? "left-0"
+                        : "left-1/2 -translate-x-1/2",
                   )}
                 >
                   {formatCost(d.cost)}
@@ -70,12 +86,12 @@ export function DailyCostChart({ days }: { days: Day[] }) {
 
         {hovered && (
           <div
-            className="pointer-events-none absolute top-0 z-10 flex -translate-x-1/2 flex-col rounded-md border bg-white px-2.5 py-1.5 text-xs shadow-md"
+            className="pointer-events-none absolute top-0 z-10 flex -translate-x-1/2 flex-col rounded-md border bg-white px-2.5 py-1.5 text-xs whitespace-nowrap shadow-md"
             style={{ left: `${Math.min(Math.max(((active! + 0.5) / days.length) * 100, 10), 90)}%` }}
           >
             <span className="text-sm font-semibold tabular-nums">{formatCost(hovered.cost)}</span>
             <span className="text-zinc-500">
-              {shortDate(hovered.date)}, 토큰 {formatNumber(hovered.tokens)}개
+              {dateWithWeekday(hovered.date)}, 토큰 {formatNumber(hovered.tokens)}개
             </span>
           </div>
         )}
@@ -88,9 +104,9 @@ export function DailyCostChart({ days }: { days: Day[] }) {
               key={d.date}
               className={cn(
                 "absolute whitespace-nowrap",
-                i === 0 ? "left-0" : i === days.length - 1 ? "right-0" : "-translate-x-1/2",
+                { center: "-translate-x-1/2", start: "left-0", end: "right-0" }[align(i)],
               )}
-              style={i !== 0 && i !== days.length - 1 ? { left: `${((i + 0.5) / days.length) * 100}%` } : undefined}
+              style={align(i) === "center" ? { left: `${((i + 0.5) / days.length) * 100}%` } : undefined}
             >
               {i === days.length - 1 ? "오늘" : shortDate(d.date)}
             </span>
