@@ -1,10 +1,11 @@
 "use client";
 
 import { Menu } from "@base-ui/react/menu";
-import { Copy, Ellipsis, ExternalLink, Lock, LockOpen, Pencil, Trash2 } from "lucide-react";
+import { Code, Copy, Ellipsis, ExternalLink, Lock, LockOpen, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
+import { ApiDialog } from "@/components/workflow/api-dialog";
 import { api } from "@/lib/api/client";
 import type { WorkflowGraph } from "@/lib/workflow";
 
@@ -16,12 +17,14 @@ type WorkflowCardMenuProps = {
   name: string;
   graph: WorkflowGraph;
   deleteProtected: boolean;
+  published: boolean;
   onRename: () => void;
 };
 
-export function WorkflowCardMenu({ id, name, graph, deleteProtected, onRename }: WorkflowCardMenuProps) {
+export function WorkflowCardMenu({ id, name, graph, deleteProtected, published, onRename }: WorkflowCardMenuProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [showApi, setShowApi] = useState(false);
 
   const duplicate = () =>
     startTransition(async () => {
@@ -47,49 +50,62 @@ export function WorkflowCardMenu({ id, name, graph, deleteProtected, onRename }:
   };
 
   return (
-    <Menu.Root>
-      <Menu.Trigger
-        aria-label={`${name} 메뉴`}
-        disabled={pending}
-        className="bg-background/90 text-muted-foreground hover:text-foreground data-popup-open:text-foreground focus-visible:ring-ring/50 flex size-8 items-center justify-center rounded-lg border shadow-xs outline-none focus-visible:ring-3 disabled:opacity-50"
-      >
-        <Ellipsis className="size-4" />
-      </Menu.Trigger>
-      <Menu.Portal>
-        <Menu.Positioner className="z-50 outline-hidden" sideOffset={6} align="end">
-          <Menu.Popup className="bg-background min-w-40 origin-[var(--transform-origin)] rounded-lg border p-1 shadow-md outline-hidden transition-[scale,opacity] duration-100 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
-            <Menu.Item className={itemClass} onClick={() => router.push(`/workflows/${id}`)}>
-              <ExternalLink className="text-muted-foreground size-4" />
-              열기
-            </Menu.Item>
-            <Menu.Item className={itemClass} onClick={onRename}>
-              <Pencil className="text-muted-foreground size-4" />
-              이름 바꾸기
-            </Menu.Item>
-            <Menu.Item className={itemClass} onClick={duplicate}>
-              <Copy className="text-muted-foreground size-4" />
-              복제
-            </Menu.Item>
-            <Menu.Item className={itemClass} onClick={toggleProtection}>
-              {deleteProtected ? (
-                <LockOpen className="text-muted-foreground size-4" />
-              ) : (
-                <Lock className="text-muted-foreground size-4" />
-              )}
-              {deleteProtected ? "삭제 보호 풀기" : "삭제 보호"}
-            </Menu.Item>
-            <Menu.Separator className="bg-border mx-1 my-1 h-px" />
-            <Menu.Item
-              disabled={deleteProtected}
-              className={`${itemClass} text-destructive data-highlighted:bg-destructive/10 data-disabled:text-muted-foreground data-disabled:opacity-60`}
-              onClick={remove}
-            >
-              <Trash2 className="size-4" />
-              {deleteProtected ? "삭제 (보호 중)" : "삭제"}
-            </Menu.Item>
-          </Menu.Popup>
-        </Menu.Positioner>
-      </Menu.Portal>
-    </Menu.Root>
+    <>
+      <Menu.Root>
+        <Menu.Trigger
+          aria-label={`${name} 메뉴`}
+          disabled={pending}
+          className="bg-background/90 text-muted-foreground hover:text-foreground data-popup-open:text-foreground focus-visible:ring-ring/50 flex size-8 items-center justify-center rounded-lg border shadow-xs outline-none focus-visible:ring-3 disabled:opacity-50"
+        >
+          <Ellipsis className="size-4" />
+        </Menu.Trigger>
+        <Menu.Portal>
+          <Menu.Positioner className="z-50 outline-hidden" sideOffset={6} align="end">
+            <Menu.Popup className="bg-background min-w-40 origin-[var(--transform-origin)] rounded-lg border p-1 shadow-md outline-hidden transition-[scale,opacity] duration-100 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
+              <Menu.Item className={itemClass} onClick={() => router.push(`/workflows/${id}`)}>
+                <ExternalLink className="text-muted-foreground size-4" />
+                열기
+              </Menu.Item>
+              <Menu.Item className={itemClass} onClick={onRename}>
+                <Pencil className="text-muted-foreground size-4" />
+                이름 바꾸기
+              </Menu.Item>
+              <Menu.Item className={itemClass} onClick={duplicate}>
+                <Copy className="text-muted-foreground size-4" />
+                복제
+              </Menu.Item>
+              <Menu.Item className={itemClass} onClick={() => setShowApi(true)}>
+                <Code className="text-muted-foreground size-4" />
+                외부에서 쓰기 (API·웹사이트)
+              </Menu.Item>
+              <Menu.Item className={itemClass} onClick={toggleProtection}>
+                {deleteProtected ? (
+                  <LockOpen className="text-muted-foreground size-4" />
+                ) : (
+                  <Lock className="text-muted-foreground size-4" />
+                )}
+                {deleteProtected ? "삭제 보호 풀기" : "삭제 보호"}
+              </Menu.Item>
+              <Menu.Separator className="bg-border mx-1 my-1 h-px" />
+              <Menu.Item
+                disabled={deleteProtected}
+                className={`${itemClass} text-destructive data-highlighted:bg-destructive/10 data-disabled:text-muted-foreground data-disabled:opacity-60`}
+                onClick={remove}
+              >
+                <Trash2 className="size-4" />
+                {deleteProtected ? "삭제 (보호 중)" : "삭제"}
+              </Menu.Item>
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.Root>
+      <ApiDialog
+        open={showApi}
+        onClose={() => setShowApi(false)}
+        workflowId={id}
+        name={name}
+        published={published}
+      />
+    </>
   );
 }

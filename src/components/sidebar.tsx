@@ -22,7 +22,7 @@ export async function Sidebar() {
   return (
     <aside className="bg-background flex w-64 shrink-0 flex-col border-r">
       <div className="flex h-12 shrink-0 items-center justify-between border-b pr-2 pl-4">
-        <h2 className="text-sm font-semibold">대화</h2>
+        <h2 className="text-sm font-semibold">에이전트</h2>
         <Link
           href="/chat"
           aria-label="새 대화"

@@ -1,12 +1,15 @@
+import { ApiKeySettings } from "@/components/settings/api-key-settings";
 import { ModelSettings } from "@/components/settings/model-settings";
 import { TelegramSettings } from "@/components/settings/telegram-settings";
 import { backend } from "@/lib/api/server";
 
 export default async function SettingsPage() {
-  const [providers, models, telegram] = await Promise.all([
+  const [providers, models, telegram, apiKeys, workflows] = await Promise.all([
     backend.GET("/api/v1/providers"),
     backend.GET("/api/v1/models"),
     backend.GET("/api/v1/integrations/telegram"),
+    backend.GET("/api/v1/api-keys"),
+    backend.GET("/api/v1/workflows"),
   ]);
 
   return (
@@ -25,6 +28,10 @@ export default async function SettingsPage() {
           defaultModel={models.data?.default ?? null}
         />
         <TelegramSettings status={telegram.data ?? { connected: false }} />
+        <ApiKeySettings
+          keys={apiKeys.data ?? []}
+          workflows={(workflows.data ?? []).map((w) => ({ id: w.id, name: w.name }))}
+        />
       </div>
     </div>
   );

@@ -5,11 +5,12 @@ import { Streamdown } from "streamdown";
 
 import { AgentAvatar } from "@/components/chat/agent-avatar";
 import { FeedbackButtons } from "@/components/feedback-buttons";
+import { MessageTime } from "@/components/message-time";
 import { StatusIcon } from "@/components/workflow/nodes";
 import type { RunStatus } from "@/lib/workflow";
 
 type ToolPart = Extract<UIMessage["parts"][number], { toolCallId: string }>;
-type AnswerMetadata = { runId?: string; feedback?: number | null };
+type AnswerMetadata = { runId?: string; feedback?: number | null; createdAt?: string };
 
 const TOOL_STATE: Record<string, { label: string; status: RunStatus }> = {
   "input-streaming": { label: "준비 중", status: "running" },
@@ -57,6 +58,15 @@ function ToolCallView({ part, label }: { part: ToolPart; label?: string }) {
   );
 }
 
+/**
+ * 화면에 그릴 내용(글·도구 호출)이 있는지.
+ * 답변 스트림은 시작 신호(start)에서 빈 답변 메시지를 먼저 만든다. 내용이 오기 전까지는 그리지 않고
+ * "답변을 준비하는 중" 표시만 보여 준다 (아이콘이 두 개 뜨지 않게).
+ */
+export function hasVisibleParts(message: UIMessage): boolean {
+  return message.parts.some((part) => (part.type === "text" && part.text.length > 0) || isToolUIPart(part));
+}
+
 export function MessageView({
   message,
   done = true,
@@ -74,7 +84,7 @@ export function MessageView({
 
   if (isUser) {
     return (
-      <div className="flex justify-end">
+      <div className="flex flex-col items-end gap-1">
         <div className="bg-muted max-w-[80%] rounded-2xl rounded-br-md px-4 py-2.5">
           {message.parts.map((part, i) =>
             part.type === "text" ? (
@@ -84,6 +94,7 @@ export function MessageView({
             ) : null,
           )}
         </div>
+        <MessageTime iso={meta.createdAt} className="px-1" />
       </div>
     );
   }
@@ -108,9 +119,14 @@ export function MessageView({
           }
           return null;
         })}
-        {/* 실행 ID 가 있는 답변만 평가할 수 있다 (예전 대화에는 없다) */}
-        {done && meta.runId && (
-          <FeedbackButtons key={meta.runId} runId={meta.runId} initial={meta.feedback} className="-ml-1" />
+        {done && (meta.runId || meta.createdAt) && (
+          <div className="flex items-center gap-2">
+            {/* 실행 ID 가 있는 답변만 평가할 수 있다 (예전 대화에는 없다) */}
+            {meta.runId && (
+              <FeedbackButtons key={meta.runId} runId={meta.runId} initial={meta.feedback} className="-ml-1" />
+            )}
+            <MessageTime iso={meta.createdAt} />
+          </div>
         )}
       </div>
     </div>

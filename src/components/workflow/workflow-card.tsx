@@ -122,6 +122,7 @@ export function WorkflowCard({ workflow, updatedLabel }: { workflow: Workflow; u
           id={workflow.id}
           name={workflow.name}
           graph={workflow.graph}
+          published={Boolean(workflow.published_at)}
           deleteProtected={workflow.delete_protected ?? false}
           onRename={() => setEditing(true)}
         />

@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AgentSettings } from "@/components/agents/agent-settings";
 import { AgentAvatar } from "@/components/chat/agent-avatar";
-import { MessageView } from "@/components/chat/message";
+import { hasVisibleParts, MessageView } from "@/components/chat/message";
 import { ModelSelect } from "@/components/model-select";
 import type { Agent, ModelOption, Tool } from "@/lib/api/client";
 
@@ -57,6 +57,10 @@ export function Chat({ threadId, initialMessages, initialModel, models, agent, t
   });
 
   const busy = status === "submitted" || status === "streaming";
+  // 보낸 뒤 답변 내용이 아직 하나도 오지 않았으면 준비 중 표시를 보여 준다
+  const last = messages.at(-1);
+  const waiting =
+    status === "submitted" || (busy && last !== undefined && last.role === "assistant" && !hasVisibleParts(last));
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -65,7 +69,7 @@ export function Chat({ threadId, initialMessages, initialModel, models, agent, t
   const submit = () => {
     const text = input.trim();
     if (!text || busy) return;
-    sendMessage({ text }, { body: { model } });
+    sendMessage({ text, metadata: { createdAt: new Date().toISOString() } }, { body: { model } });
     setInput("");
   };
 
@@ -112,16 +116,18 @@ export function Chat({ threadId, initialMessages, initialModel, models, agent, t
                   </p>
                 </div>
               )}
-              {messages.map((message, i) => (
-                <MessageView
-                  key={message.id}
-                  message={message}
-                  isAgent={Boolean(agent)}
-                  toolLabels={toolLabels}
-                  done={!(busy && i === messages.length - 1)}
-                />
-              ))}
-              {status === "submitted" && (
+              {messages.map((message, i) =>
+                message.role === "assistant" && !hasVisibleParts(message) ? null : (
+                  <MessageView
+                    key={message.id}
+                    message={message}
+                    isAgent={Boolean(agent)}
+                    toolLabels={toolLabels}
+                    done={!(busy && i === messages.length - 1)}
+                  />
+                ),
+              )}
+              {waiting && (
                 <div className="flex gap-3">
                   <AgentAvatar isAgent={Boolean(agent)} />
                   <span

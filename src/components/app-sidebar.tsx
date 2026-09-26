@@ -3,7 +3,7 @@
 import { cn } from "cn";
 import {
   BarChart3,
-  MessagesSquare,
+  Bot,
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
@@ -25,7 +25,7 @@ const NAV: { title?: string; items: NavItem[] }[] = [
   {
     items: [
       { href: "/workflows", label: "워크플로우", icon: Workflow },
-      { href: "/chat", label: "대화", icon: MessagesSquare },
+      { href: "/chat", label: "에이전트", icon: Bot },
       { href: "/usage", label: "사용량", icon: BarChart3 },
     ],
   },

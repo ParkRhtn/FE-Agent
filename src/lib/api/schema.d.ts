@@ -158,6 +158,8 @@ export interface paths {
         /**
          * Chat
          * @description 메시지를 보내고 에이전트 응답을 SSE 로 스트리밍한다 (Vercel AI SDK useChat 호환).
+         *
+         *     서버 키 모델인데 크레딧이 없으면 402. 사용자가 등록한 키의 모델은 크레딧과 무관하게 쓸 수 있다.
          */
         post: operations["chat_api_v1_threads__thread_id__chat_post"];
         delete?: never;
@@ -255,6 +257,58 @@ export interface paths {
         /** Run Workflow */
         post: operations["run_workflow_api_v1_workflows__workflow_id__run_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/{workflow_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish Workflow
+         * @description 지금 저장된 편집본을 배포본으로. 외부 API·공개 링크는 배포본만 실행한다.
+         */
+        post: operations["publish_workflow_api_v1_workflows__workflow_id__publish_post"];
+        /**
+         * Unpublish Workflow
+         * @description 배포를 내린다. 외부 API·공개 링크 호출은 바로 거부된다.
+         */
+        delete: operations["unpublish_workflow_api_v1_workflows__workflow_id__publish_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/{workflow_id}/embed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Embed
+         * @description 공개 링크 (iframe). 만든 적 없으면 null.
+         */
+        get: operations["get_embed_api_v1_workflows__workflow_id__embed_get"];
+        /**
+         * Upsert Embed
+         * @description 공개 링크를 만들거나 설정을 바꾼다. 주소(token)는 처음 만들 때 한 번 정해진다.
+         */
+        put: operations["upsert_embed_api_v1_workflows__workflow_id__embed_put"];
+        post?: never;
+        /**
+         * Delete Embed
+         * @description 공개 링크를 없앤다. 다시 만들면 주소가 바뀐다.
+         */
+        delete: operations["delete_embed_api_v1_workflows__workflow_id__embed_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -413,6 +467,145 @@ export interface paths {
         get: operations["get_usage_api_v1_usage_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/credits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Credits
+         * @description 내 크레딧 잔액과 최근 충전·사용 내역.
+         */
+        get: operations["my_credits_api_v1_credits_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/credits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * User Credits
+         * @description (관리자) 사용자의 크레딧 잔액과 내역.
+         */
+        get: operations["user_credits_api_v1_admin_credits_get"];
+        put?: never;
+        /**
+         * Grant Credits
+         * @description (관리자) 크레딧 충전. 음수면 조정(회수). 결제 연동 전 초기 고객 운영용.
+         */
+        post: operations["grant_credits_api_v1_admin_credits_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/api-keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Api Keys */
+        get: operations["list_api_keys_api_v1_api_keys_get"];
+        put?: never;
+        /**
+         * Create Api Key
+         * @description 키 원문은 이 응답에서만 한 번 보여 준다.
+         */
+        post: operations["create_api_key_api_v1_api_keys_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/api-keys/{key_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Api Key
+         * @description 지우면 그 키로 오는 요청은 바로 거부된다.
+         */
+        delete: operations["delete_api_key_api_v1_api_keys__key_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ext/workflows/{workflow_id}/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run Workflow
+         * @description 배포된 워크플로우를 실행한다. 기본은 끝날 때까지 기다렸다가 결과를 한 번에 돌려준다.
+         */
+        post: operations["run_workflow_api_v1_ext_workflows__workflow_id__run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/embeds/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Embed */
+        get: operations["get_embed_api_v1_public_embeds__token__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/embeds/{token}/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run Embed */
+        post: operations["run_embed_api_v1_public_embeds__token__run_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -587,6 +780,51 @@ export interface components {
             /** Tools */
             tools?: string[] | null;
         };
+        /** ApiKeyCreate */
+        ApiKeyCreate: {
+            /** Name */
+            name: string;
+            /** Workflow Ids */
+            workflow_ids?: string[] | null;
+        };
+        /** ApiKeyCreated */
+        ApiKeyCreated: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Prefix */
+            prefix: string;
+            /** Workflow Ids */
+            workflow_ids: string[] | null;
+            /** Last Used At */
+            last_used_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Key */
+            key: string;
+        };
+        /** ApiKeyRead */
+        ApiKeyRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Prefix */
+            prefix: string;
+            /** Workflow Ids */
+            workflow_ids: string[] | null;
+            /** Last Used At */
+            last_used_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** ChatRequest */
         ChatRequest: {
             /** Message */
@@ -601,10 +839,155 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** CreditGrant */
+        CreditGrant: {
+            /** Email */
+            email: string;
+            /** Amount */
+            amount: number;
+            /** Note */
+            note?: string | null;
+        };
+        /** CreditTransactionRead */
+        CreditTransactionRead: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "grant" | "usage" | "adjust";
+            /** Amount */
+            amount: number;
+            /** Run Id */
+            run_id: string | null;
+            /** Note */
+            note: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** CreditsRead */
+        CreditsRead: {
+            /** Balance */
+            balance: number;
+            /** Enforced */
+            enforced: boolean;
+            /** Credits Per Usd */
+            credits_per_usd: number;
+            /** Transactions */
+            transactions: components["schemas"]["CreditTransactionRead"][];
+        };
         /** DefaultModelUpdate */
         DefaultModelUpdate: {
             /** Model */
             model: string;
+        };
+        /**
+         * EmbedPublic
+         * @description 공개 페이지가 그릴 정보. 로그인 없이 보이므로 이름·설명 말고는 내보내지 않는다.
+         */
+        EmbedPublic: {
+            /**
+             * Kind
+             * @default workflow
+             * @constant
+             */
+            kind: "workflow";
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Allowed Origins */
+            allowed_origins: string[];
+        };
+        /** EmbedRead */
+        EmbedRead: {
+            /** Token */
+            token: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Allowed Origins */
+            allowed_origins: string[];
+            /** Daily Limit */
+            daily_limit: number;
+            /**
+             * Today Runs
+             * @default 0
+             */
+            today_runs: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** EmbedRunRequest */
+        EmbedRunRequest: {
+            /**
+             * Input
+             * @default
+             */
+            input: string;
+        };
+        /** EmbedRunResult */
+        EmbedRunResult: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "done" | "error";
+            /** Output */
+            output?: string | null;
+            /** Error */
+            error?: string | null;
+        };
+        /** EmbedUpdate */
+        EmbedUpdate: {
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /**
+             * Allowed Origins
+             * @default []
+             */
+            allowed_origins: string[];
+            /**
+             * Daily Limit
+             * @default 100
+             */
+            daily_limit: number;
+        };
+        /** ExtRunRequest */
+        ExtRunRequest: {
+            /**
+             * Input
+             * @default
+             */
+            input: string;
+            /**
+             * Stream
+             * @default false
+             */
+            stream: boolean;
+        };
+        /** ExtRunResult */
+        ExtRunResult: {
+            /** Run Id */
+            run_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "done" | "error";
+            /** Output */
+            output?: string | null;
+            /** Error */
+            error?: string | null;
         };
         /** FeedbackRead */
         FeedbackRead: {
@@ -643,6 +1026,13 @@ export interface components {
             label: string;
             /** Provider */
             provider: string;
+            /**
+             * Billing
+             * @enum {string}
+             */
+            billing: "platform" | "user" | "free";
+            /** Blocked Reason */
+            blocked_reason?: string | null;
         };
         /** ModelTestRequest */
         ModelTestRequest: {
@@ -949,6 +1339,11 @@ export interface components {
              */
             by_source: components["schemas"]["UsageRow"][];
             /**
+             * By Billing
+             * @default []
+             */
+            by_billing: components["schemas"]["UsageRow"][];
+            /**
              * Daily
              * @default []
              */
@@ -1059,6 +1454,8 @@ export interface components {
             /** Description */
             description: string | null;
             graph: components["schemas"]["WorkflowGraph"];
+            /** Published At */
+            published_at?: string | null;
             schedule?: components["schemas"]["WorkflowSchedule"] | null;
             /**
              * Delete Protected
@@ -1075,6 +1472,11 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /**
+             * Has Unpublished Changes
+             * @description 배포한 뒤 편집본을 고쳤는지 (배포 전이면 False)
+             */
+            readonly has_unpublished_changes: boolean;
             /**
              * Next Run At
              * @description 다음 예약 실행 시각
@@ -1847,6 +2249,170 @@ export interface operations {
             };
         };
     };
+    publish_workflow_api_v1_workflows__workflow_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowRead"];
+                };
+            };
+            /** @description 그래프 검증 실패. detail 에 오류 목록 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unpublish_workflow_api_v1_workflows__workflow_id__publish_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_embed_api_v1_workflows__workflow_id__embed_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmbedRead"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upsert_embed_api_v1_workflows__workflow_id__embed_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmbedUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmbedRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_embed_api_v1_workflows__workflow_id__embed_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_workflow_runs_api_v1_workflows__workflow_id__runs_get: {
         parameters: {
             query?: {
@@ -2147,6 +2713,328 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UsageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_credits_api_v1_credits_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditsRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    user_credits_api_v1_admin_credits_get: {
+        parameters: {
+            query: {
+                email: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditsRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    grant_credits_api_v1_admin_credits_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreditGrant"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditsRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_api_keys_api_v1_api_keys_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKeyRead"][];
+                };
+            };
+        };
+    };
+    create_api_key_api_v1_api_keys_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApiKeyCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKeyCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_api_key_api_v1_api_keys__key_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_workflow_api_v1_ext_workflows__workflow_id__run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtRunRequest"];
+            };
+        };
+        responses: {
+            /** @description stream=false: 결과 JSON / stream=true: 노드별 실행 이벤트 (SSE) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtRunResult"];
+                    "text/event-stream": unknown;
+                };
+            };
+            /** @description 워크플로우 검증 실패. detail 에 오류 목록 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description API 키가 없거나 잘못됨 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 서버 키 모델의 크레딧 부족 */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 워크플로우가 없거나 이 키로 부를 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 배포되지 않은 워크플로우 (배포본만 실행한다) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description 요청이 너무 많음 (키 하나당 1분 제한) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_embed_api_v1_public_embeds__token__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmbedPublic"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_embed_api_v1_public_embeds__token__run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmbedRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmbedRunResult"];
                 };
             };
             /** @description Validation Error */

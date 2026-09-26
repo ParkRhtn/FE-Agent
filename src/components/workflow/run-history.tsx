@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Clock, Code, Globe, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { StatusIcon } from "@/components/workflow/nodes";
@@ -88,6 +88,18 @@ export function RunHistory({
                   <span className="flex items-center gap-0.5 rounded bg-emerald-50 px-1 text-[11px] text-emerald-800">
                     <Clock className="size-3" />
                     예약
+                  </span>
+                )}
+                {run.trigger === "api" && (
+                  <span className="flex items-center gap-0.5 rounded bg-sky-50 px-1 text-[11px] text-sky-800">
+                    <Code className="size-3" />
+                    API
+                  </span>
+                )}
+                {run.trigger === "embed" && (
+                  <span className="flex items-center gap-0.5 rounded bg-violet-50 px-1 text-[11px] text-violet-800">
+                    <Globe className="size-3" />
+                    공개 링크
                   </span>
                 )}
                 {took && <span className="text-muted-foreground tabular-nums">{took}</span>}

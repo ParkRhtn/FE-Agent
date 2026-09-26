@@ -30,3 +30,4 @@ export type ModelOption = components["schemas"]["ModelOption"];
 export type Provider = components["schemas"]["ProviderRead"];
 export type TelegramStatus = components["schemas"]["TelegramStatus"];
 export type WorkflowSchedule = components["schemas"]["WorkflowSchedule"];
+export type ApiKey = components["schemas"]["ApiKeyRead"];

@@ -16,15 +16,17 @@ import {
   type Edge,
 } from "@xyflow/react";
 import { cn } from "cn";
-import { ChevronRight, Clock, Lock, LockOpen, Pencil, Play, Square, Trash2, X } from "lucide-react";
+import { Braces, ChevronRight, Clock, Lock, LockOpen, Pencil, Play, Rocket, Square, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { FeedbackButtons } from "@/components/feedback-buttons";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { NodeConfig } from "@/components/workflow/node-config";
+import { JsonDialog } from "@/components/workflow/json-dialog";
 import { RunHistory } from "@/components/workflow/run-history";
 import { SchedulePanel } from "@/components/workflow/schedule-panel";
 import { DRAG_TYPE, NodePalette, type PaletteItem } from "@/components/workflow/node-palette";
@@ -108,6 +110,11 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
   const [schedule, setSchedule] = useState(workflow.schedule ?? null);
   const [nextRunAt, setNextRunAt] = useState(workflow.next_run_at ?? null);
   const [deleteProtected, setDeleteProtected] = useState(workflow.delete_protected ?? false);
+  const [showJson, setShowJson] = useState(false);
+  // 배포본: 외부 API·공개 링크는 이것만 실행한다 (편집본을 저장해도 바뀌지 않는다)
+  const [publishedAt, setPublishedAt] = useState(workflow.published_at ?? null);
+  const [unpublishedChanges, setUnpublishedChanges] = useState(workflow.has_unpublished_changes);
+  const [publishing, setPublishing] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -214,8 +221,38 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
       return false;
     }
     setSavedSnapshot(snapshot(name, nodes, edges));
+    if (publishedAt) setUnpublishedChanges(true);
     router.refresh();
     return true;
+  };
+
+  /** 저장한 편집본을 배포본으로. 저장 안 된 변경이 있으면 먼저 저장한다. */
+  const publish = async () => {
+    if (dirty && !(await save())) return;
+    setPublishing(true);
+    const { data, error } = await api.POST("/api/v1/workflows/{workflow_id}/publish", {
+      params: { path: { workflow_id: workflow.id } },
+    });
+    setPublishing(false);
+    if (error || !data) {
+      const detail = (error as { detail?: unknown } | undefined)?.detail;
+      toast.error("배포하지 못했습니다", {
+        description: Array.isArray(detail) ? "실행 탭에서 고칠 곳을 확인하세요." : "잠시 후 다시 시도하세요.",
+      });
+      setPanel("run");
+      setRun({
+        status: "error",
+        errors: Array.isArray(detail) ? detail.map(String) : ["배포하지 못했습니다. 잠시 후 다시 시도하세요."],
+      });
+      return;
+    }
+    const first = !publishedAt;
+    setPublishedAt(data.published_at ?? null);
+    setUnpublishedChanges(false);
+    toast.success(first ? "배포했습니다" : "새 버전을 배포했습니다", {
+      description: "외부 API·공개 링크가 지금 저장된 내용으로 실행됩니다. 목록 카드 메뉴 → '외부에서 쓰기'에서 연결하세요.",
+    });
+    router.refresh();
   };
 
   const toggleProtection = async () => {
@@ -414,6 +451,20 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
           <span className={cn("size-1.5 rounded-full", dirty ? "bg-amber-500" : "bg-emerald-500")} />
           {saving ? "저장 중" : dirty ? "저장 안 됨" : "저장됨"}
         </span>
+        <span
+          className={cn(
+            "flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[11px]",
+            !publishedAt
+              ? "text-muted-foreground bg-muted"
+              : dirty || unpublishedChanges
+                ? "bg-amber-50 text-amber-800"
+                : "bg-sky-50 text-sky-800",
+          )}
+          title="외부 API·공개 링크는 배포본만 실행합니다"
+        >
+          <Rocket className="size-3" />
+          {!publishedAt ? "배포 전" : dirty || unpublishedChanges ? "배포본과 다름" : "배포됨"}
+        </span>
         <span className="flex-1" />
         <button
           type="button"
@@ -429,6 +480,15 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
         >
           <Clock className="size-3.5" />
           {schedule?.enabled ? scheduleLabel(schedule) : "예약"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowJson(true)}
+          aria-label="JSON 보기"
+          title="JSON 보기"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
+        >
+          <Braces className="size-4" />
         </button>
         <button
           type="button"
@@ -458,6 +518,16 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
         <Button variant="outline" size="sm" onClick={save} disabled={!dirty || saving || running}>
           저장
         </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={publish}
+          disabled={publishing || saving || running || (Boolean(publishedAt) && !dirty && !unpublishedChanges)}
+          title={dirty ? "저장하고 배포합니다" : "지금 저장된 내용을 외부 API·공개 링크에 반영합니다"}
+        >
+          <Rocket className="size-3.5" />
+          {publishing ? "배포 중" : "배포"}
+        </Button>
         {running ? (
           <Button size="sm" variant="outline" onClick={() => abortRef.current?.abort()}>
             <Square className="size-3 fill-current" />
@@ -477,6 +547,13 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
           </Button>
         )}
       </header>
+      <JsonDialog
+        open={showJson}
+        onClose={() => setShowJson(false)}
+        name={name}
+        dirty={dirty}
+        json={showJson ? JSON.stringify({ name, graph: fromFlow(nodes, edges) }, null, 2) : ""}
+      />
 
       <div className="flex min-h-0 flex-1">
         <NodePalette
