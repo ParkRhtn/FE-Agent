@@ -5,6 +5,8 @@ import { useState, useTransition } from "react";
 
 import { AgentAvatar } from "@/components/chat/agent-avatar";
 import { api } from "@/lib/api/client";
+import { toast } from "sonner";
+import { apiErrorMessage } from "@/lib/api/errors";
 
 type AgentItem = { id: string; name: string; description: string | null };
 
@@ -17,11 +19,14 @@ export function AgentList({ agents }: { agents: AgentItem[] }) {
   const start = (agentId: string | undefined) => {
     setOpening(agentId ?? "default");
     startTransition(async () => {
-      const { data } = await api.POST("/api/v1/threads", { body: { agent_id: agentId } });
-      if (data) {
-        router.push(`/chat/${data.id}`);
-        router.refresh();
+      const { data, error } = await api.POST("/api/v1/threads", { body: { agent_id: agentId } });
+      if (!data) {
+        setOpening(null);
+        toast.error("대화를 시작하지 못했습니다", { description: apiErrorMessage(error) });
+        return;
       }
+      router.push(`/chat/${data.id}`);
+      router.refresh();
     });
   };
 

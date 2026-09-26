@@ -5,6 +5,8 @@ import { useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
+import { toast } from "sonner";
+import { apiErrorMessage } from "@/lib/api/errors";
 
 export function NewWorkflowButton() {
   const router = useRouter();
@@ -12,13 +14,17 @@ export function NewWorkflowButton() {
 
   const create = () =>
     startTransition(async () => {
-      const { data } = await api.POST("/api/v1/workflows", { body: { name: "새 워크플로우" } });
-      if (data) router.push(`/workflows/${data.id}?new=1`);
+      const { data, error } = await api.POST("/api/v1/workflows", { body: { name: "새 워크플로우" } });
+      if (!data) {
+        toast.error("워크플로우를 만들지 못했습니다", { description: apiErrorMessage(error) });
+        return;
+      }
+      router.push(`/workflows/${data.id}?new=1`);
     });
 
   return (
     <Button onClick={create} disabled={pending}>
-      {pending ? "만드는 중..." : "+ 새 워크플로우"}
+      {pending ? "만드는 중…" : "+ 새 워크플로우"}
     </Button>
   );
 }

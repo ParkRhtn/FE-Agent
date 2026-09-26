@@ -8,6 +8,8 @@ import { useState, useTransition } from "react";
 import { ModelSelect } from "@/components/model-select";
 import { Button } from "@/components/ui/button";
 import { api, type ModelOption, type Provider } from "@/lib/api/client";
+import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
 
 type Kind = "anthropic" | "openai" | "openai_compatible";
 
@@ -246,6 +248,7 @@ function ProviderCard({ provider }: { provider: Provider }) {
   const [newName, setNewName] = useState<string | null>(null);
   const [tests, setTests] = useState<Record<string, TestState>>({});
   const [pending, startTransition] = useTransition();
+  const confirm = useConfirm();
   const path = { params: { path: { provider_id: provider.id } } };
 
   const act = (fn: () => Promise<string | null>) =>
@@ -303,10 +306,21 @@ function ProviderCard({ provider }: { provider: Provider }) {
     });
   };
 
-  const remove = () => {
-    if (!confirm(`'${provider.name}' 연결을 삭제할까요? 이 제공사의 모델을 쓰던 곳은 기본 모델로 바뀝니다.`)) return;
+  const remove = async () => {
+    const ok = await confirm({
+      title: `'${provider.name}' 연결을 삭제할까요?`,
+      description: "이 제공사의 모델을 쓰던 곳은 기본 모델로 바뀝니다. 저장된 API 키도 지워집니다.",
+      confirmLabel: "삭제",
+      destructive: true,
+    });
+    if (!ok) return;
     act(async () => {
-      await api.DELETE("/api/v1/providers/{provider_id}", path);
+      const { error } = await api.DELETE("/api/v1/providers/{provider_id}", path);
+      if (error) {
+        setError(errorText(error, "삭제하지 못했습니다."));
+        return null;
+      }
+      toast.success(`'${provider.name}' 연결을 삭제했습니다`); // 목록에서 사라지므로 토스트로 알린다
       return null;
     });
   };

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 
+import { ConfirmProvider } from "@/components/ui/confirm";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,7 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex h-full">
-        {children}
+        <ConfirmProvider>{children}</ConfirmProvider>
         <Toaster position="top-center" richColors closeButton />
       </body>
     </html>

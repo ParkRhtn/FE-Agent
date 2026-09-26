@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { PublishNotice } from "@/components/workflow/publish-notice";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
+import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
+import { apiErrorMessage } from "@/lib/api/errors";
 
 type Embed = components["schemas"]["EmbedRead"];
 
@@ -27,6 +30,7 @@ export function EmbedSettings({
   const [dailyLimit, setDailyLimit] = useState(100);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const confirm = useConfirm();
 
   const apply = (value: Embed | null) => {
     setEmbed(value);
@@ -61,14 +65,27 @@ export function EmbedSettings({
         return;
       }
       apply(data);
+      toast.success(!embed ? "공개 링크를 만들었습니다" : enabled ? "저장했습니다" : "공개 링크를 잠시 껐습니다");
     });
 
-  const remove = () => {
-    if (!window.confirm("공개 링크를 없앨까요? 붙여 둔 사이트에서 바로 안 보이게 되고, 다시 만들면 주소가 바뀝니다."))
-      return;
+  const remove = async () => {
+    const ok = await confirm({
+      title: "공개 링크를 없앨까요?",
+      description: "붙여 둔 사이트에서 바로 안 보이게 됩니다. 다시 만들면 주소가 바뀝니다.",
+      confirmLabel: "없애기",
+      destructive: true,
+    });
+    if (!ok) return;
     startTransition(async () => {
-      await api.DELETE("/api/v1/workflows/{workflow_id}/embed", { params: { path: { workflow_id: workflowId } } });
+      const { error } = await api.DELETE("/api/v1/workflows/{workflow_id}/embed", {
+        params: { path: { workflow_id: workflowId } },
+      });
+      if (error) {
+        toast.error("공개 링크를 없애지 못했습니다", { description: apiErrorMessage(error) });
+        return;
+      }
       apply(null);
+      toast.success("공개 링크를 없앴습니다");
     });
   };
 

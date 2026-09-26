@@ -9,6 +9,10 @@ import { ModelSelect } from "@/components/model-select";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { api, type Agent, type ModelOption, type Tool } from "@/lib/api/client";
+import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
+import { apiErrorMessage } from "@/lib/api/errors";
+import { useSaveShortcuts } from "@/lib/use-save-shortcuts";
 
 const inputClass =
   "bg-background focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-lg border px-2.5 py-1.5 text-sm outline-none focus-visible:ring-3";
@@ -38,6 +42,7 @@ export function AgentSettings({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const confirm = useConfirm();
   const initial = {
     name: agent.name,
     description: agent.description ?? "",
@@ -69,11 +74,23 @@ export function AgentSettings({
       router.refresh(); // 헤더 이름·대화 목록 갱신
     });
 
-  const remove = () => {
-    if (!confirm(`'${agent.name}' 에이전트를 삭제할까요? 이 에이전트로 하던 대화는 기본 에이전트로 이어집니다.`))
-      return;
+  useSaveShortcuts({ dirty, canSave: dirty && !pending, onSave: save });
+
+  const remove = async () => {
+    const ok = await confirm({
+      title: `'${agent.name}' 에이전트를 삭제할까요?`,
+      description: "이 에이전트로 하던 대화는 기본 에이전트로 이어집니다.",
+      confirmLabel: "삭제",
+      destructive: true,
+    });
+    if (!ok) return;
     startTransition(async () => {
-      await api.DELETE("/api/v1/agents/{agent_id}", { params: { path: { agent_id: agent.id } } });
+      const { error } = await api.DELETE("/api/v1/agents/{agent_id}", { params: { path: { agent_id: agent.id } } });
+      if (error) {
+        toast.error("삭제하지 못했습니다", { description: apiErrorMessage(error) });
+        return;
+      }
+      toast.success(`'${agent.name}'을 삭제했습니다`);
       router.push("/chat");
       router.refresh();
     });

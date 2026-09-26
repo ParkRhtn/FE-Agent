@@ -101,6 +101,8 @@ function WorkflowNodeView({ id, type, data, selected }: NodeProps<FlowNode>) {
         selected && "border-foreground/30 ring-foreground/5 ring-4",
         data._status === "skipped" && "opacity-45",
         data._status === "error" && "border-destructive/50",
+        data._diff === "added" && "border-emerald-400 ring-4 ring-emerald-100",
+        data._diff === "changed" && "border-amber-400 ring-4 ring-amber-100",
       )}
     >
       {kind !== "start" && (

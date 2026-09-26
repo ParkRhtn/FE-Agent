@@ -14,6 +14,7 @@ export type NodeData = Record<string, unknown> & {
   _status?: RunStatus;
   _output?: string;
   _error?: string;
+  _diff?: "added" | "changed"; // 배포본과 비교 중일 때 표시
 };
 export type FlowNode = Node<NodeData, NodeKind>;
 

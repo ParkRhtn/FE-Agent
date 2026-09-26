@@ -11,6 +11,8 @@ import { WorkflowThumbnail } from "@/components/workflow/workflow-thumbnail";
 import { api } from "@/lib/api/client";
 import { scheduleLabel } from "@/lib/schedule";
 import { NODE_META, type NodeKind, type Workflow } from "@/lib/workflow";
+import { toast } from "sonner";
+import { apiErrorMessage } from "@/lib/api/errors";
 
 const STEP_KINDS: NodeKind[] = ["llm", "agent", "tool", "condition"];
 export const canvasBg = "bg-zinc-50 bg-[radial-gradient(#d4d4d8_1px,transparent_1px)] [background-size:14px_14px]";
@@ -37,7 +39,10 @@ export function WorkflowCard({ workflow, updatedLabel }: { workflow: Workflow; u
         params: { path: { workflow_id: workflow.id } },
         body: { name: next },
       });
-      if (error) setName(workflow.name);
+      if (error) {
+        setName(workflow.name);
+        toast.error("이름을 바꾸지 못했습니다", { description: apiErrorMessage(error) });
+      }
       router.refresh();
     });
   };

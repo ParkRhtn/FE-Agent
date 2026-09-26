@@ -1454,6 +1454,7 @@ export interface components {
             /** Description */
             description: string | null;
             graph: components["schemas"]["WorkflowGraph"];
+            published_graph?: components["schemas"]["WorkflowGraph"] | null;
             /** Published At */
             published_at?: string | null;
             schedule?: components["schemas"]["WorkflowSchedule"] | null;
@@ -1474,7 +1475,7 @@ export interface components {
             updated_at: string;
             /**
              * Has Unpublished Changes
-             * @description 배포한 뒤 편집본을 고쳤는지 (배포 전이면 False)
+             * @description 배포한 뒤 편집본을 실행에 영향이 가게 고쳤는지 (배포 전이면 False). 노드 위치만 옮긴 것은 치지 않는다.
              */
             readonly has_unpublished_changes: boolean;
             /**

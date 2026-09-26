@@ -8,6 +8,7 @@ import { useState, useTransition } from "react";
 import { errorText, inputClass } from "@/components/settings/model-settings";
 import { Button } from "@/components/ui/button";
 import { api, type TelegramStatus } from "@/lib/api/client";
+import { useConfirm } from "@/components/ui/confirm";
 
 /** 텔레그램 봇 연결. 연결하면 워크플로우·에이전트의 "텔레그램 보내기" 도구가 이 채팅으로 보낸다. */
 export function TelegramSettings({ status }: { status: TelegramStatus }) {
@@ -17,6 +18,7 @@ export function TelegramSettings({ status }: { status: TelegramStatus }) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const confirm = useConfirm();
 
   const act = (fn: () => Promise<string | null | undefined>) =>
     startTransition(async () => {
@@ -46,13 +48,24 @@ export function TelegramSettings({ status }: { status: TelegramStatus }) {
       return error ? null : "테스트 메시지를 보냈습니다. 텔레그램을 확인하세요.";
     });
 
-  const disconnect = () =>
-    act(async () => {
-      if (!window.confirm("텔레그램 연결을 끊을까요? 텔레그램 보내기 도구를 쓰는 워크플로우는 실패하게 됩니다.")) return;
-      await api.DELETE("/api/v1/integrations/telegram");
-      setEditing(true);
-      return null;
+  const disconnect = async () => {
+    const ok = await confirm({
+      title: "텔레그램 연결을 끊을까요?",
+      description: "'텔레그램 보내기' 도구를 쓰는 워크플로우와 에이전트는 실패하게 됩니다.",
+      confirmLabel: "연결 끊기",
+      destructive: true,
     });
+    if (!ok) return;
+    act(async () => {
+      const { error } = await api.DELETE("/api/v1/integrations/telegram");
+      if (error) {
+        setError(errorText(error, "연결을 끊지 못했습니다."));
+        return null;
+      }
+      setEditing(true);
+      return "연결을 끊었습니다.";
+    });
+  };
 
   return (
     <section className="flex flex-col gap-3">

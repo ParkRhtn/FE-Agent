@@ -5,6 +5,8 @@ import { useTransition } from "react";
 
 import { AgentAvatar } from "@/components/chat/agent-avatar";
 import { api } from "@/lib/api/client";
+import { toast } from "sonner";
+import { apiErrorMessage } from "@/lib/api/errors";
 
 /** 누르면 그 에이전트와 새 대화를 연다. agentId 가 없으면 기본 에이전트. */
 export function StartChatCard({ agentId, name, description }: { agentId?: string; name: string; description: string }) {
@@ -13,11 +15,13 @@ export function StartChatCard({ agentId, name, description }: { agentId?: string
 
   const start = () =>
     startTransition(async () => {
-      const { data } = await api.POST("/api/v1/threads", { body: { agent_id: agentId } });
-      if (data) {
-        router.push(`/chat/${data.id}`);
-        router.refresh();
+      const { data, error } = await api.POST("/api/v1/threads", { body: { agent_id: agentId } });
+      if (!data) {
+        toast.error("대화를 시작하지 못했습니다", { description: apiErrorMessage(error) });
+        return;
       }
+      router.push(`/chat/${data.id}`);
+      router.refresh();
     });
 
   return (

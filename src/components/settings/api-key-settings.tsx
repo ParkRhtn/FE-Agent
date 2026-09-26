@@ -8,6 +8,9 @@ import { CopyButton } from "@/components/copy-button";
 import { errorText, inputClass } from "@/components/settings/model-settings";
 import { Button } from "@/components/ui/button";
 import { api, type ApiKey } from "@/lib/api/client";
+import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
+import { apiErrorMessage } from "@/lib/api/errors";
 
 function when(value: string | null | undefined): string {
   return value ? new Date(value).toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" }) : "사용 기록 없음";
@@ -25,6 +28,7 @@ export function ApiKeySettings({ keys, workflows }: { keys: ApiKey[]; workflows:
   const [created, setCreated] = useState<{ name: string; key: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const confirm = useConfirm();
 
   const create = () =>
     startTransition(async () => {
@@ -42,10 +46,21 @@ export function ApiKeySettings({ keys, workflows }: { keys: ApiKey[]; workflows:
       router.refresh();
     });
 
-  const remove = (key: ApiKey) => {
-    if (!window.confirm(`'${key.name}' 키를 지울까요? 이 키로 오는 요청은 바로 거부됩니다.`)) return;
+  const remove = async (key: ApiKey) => {
+    const ok = await confirm({
+      title: `'${key.name}' 키를 지울까요?`,
+      description: "이 키로 오는 요청은 바로 거부됩니다. 이 키를 쓰는 서비스가 있다면 새 키로 바꿔야 합니다.",
+      confirmLabel: "지우기",
+      destructive: true,
+    });
+    if (!ok) return;
     startTransition(async () => {
-      await api.DELETE("/api/v1/api-keys/{key_id}", { params: { path: { key_id: key.id } } });
+      const { error } = await api.DELETE("/api/v1/api-keys/{key_id}", { params: { path: { key_id: key.id } } });
+      if (error) {
+        toast.error("키를 지우지 못했습니다", { description: apiErrorMessage(error) });
+        return;
+      }
+      toast.success(`'${key.name}' 키를 지웠습니다`);
       router.refresh();
     });
   };

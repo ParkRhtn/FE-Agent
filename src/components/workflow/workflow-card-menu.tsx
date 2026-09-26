@@ -8,9 +8,11 @@ import { useState, useTransition } from "react";
 import { ApiDialog } from "@/components/workflow/api-dialog";
 import { api } from "@/lib/api/client";
 import type { WorkflowGraph } from "@/lib/workflow";
+import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
+import { apiErrorMessage } from "@/lib/api/errors";
+import { menuDangerItemClass, menuItemClass, menuPopupClass } from "@/components/ui/menu-styles";
 
-const itemClass =
-  "flex cursor-default items-center gap-2 rounded-md px-2.5 py-1.5 text-sm outline-hidden select-none data-highlighted:bg-muted";
 
 type WorkflowCardMenuProps = {
   id: string;
@@ -25,26 +27,48 @@ export function WorkflowCardMenu({ id, name, graph, deleteProtected, published, 
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [showApi, setShowApi] = useState(false);
+  const confirm = useConfirm();
 
   const duplicate = () =>
     startTransition(async () => {
-      await api.POST("/api/v1/workflows", { body: { name: `${name} 복사본`.slice(0, 100), graph } });
+      const { error } = await api.POST("/api/v1/workflows", { body: { name: `${name} 복사본`.slice(0, 100), graph } });
+      if (error) {
+        toast.error("복제하지 못했습니다", { description: apiErrorMessage(error) });
+        return;
+      }
+      toast.success(`'${name} 복사본'을 만들었습니다`);
       router.refresh();
     });
 
   const toggleProtection = () =>
     startTransition(async () => {
-      await api.PATCH("/api/v1/workflows/{workflow_id}", {
+      const { error } = await api.PATCH("/api/v1/workflows/{workflow_id}", {
         params: { path: { workflow_id: id } },
         body: { delete_protected: !deleteProtected },
       });
+      if (error) {
+        toast.error("삭제 보호를 바꾸지 못했습니다", { description: apiErrorMessage(error) });
+        return;
+      }
+      toast.success(deleteProtected ? "삭제 보호를 풀었습니다" : "삭제 보호를 켰습니다");
       router.refresh();
     });
 
-  const remove = () => {
-    if (!confirm(`'${name}' 워크플로우를 삭제할까요? 되돌릴 수 없습니다.`)) return;
+  const remove = async () => {
+    const ok = await confirm({
+      title: `'${name}' 워크플로우를 삭제할까요?`,
+      description: "되돌릴 수 없습니다.",
+      confirmLabel: "삭제",
+      destructive: true,
+    });
+    if (!ok) return;
     startTransition(async () => {
-      await api.DELETE("/api/v1/workflows/{workflow_id}", { params: { path: { workflow_id: id } } });
+      const { error } = await api.DELETE("/api/v1/workflows/{workflow_id}", { params: { path: { workflow_id: id } } });
+      if (error) {
+        toast.error("삭제하지 못했습니다", { description: apiErrorMessage(error) });
+        return;
+      }
+      toast.success(`'${name}'을 삭제했습니다`);
       router.refresh();
     });
   };
@@ -61,24 +85,24 @@ export function WorkflowCardMenu({ id, name, graph, deleteProtected, published, 
         </Menu.Trigger>
         <Menu.Portal>
           <Menu.Positioner className="z-50 outline-hidden" sideOffset={6} align="end">
-            <Menu.Popup className="bg-background min-w-40 origin-[var(--transform-origin)] rounded-lg border p-1 shadow-md outline-hidden transition-[scale,opacity] duration-100 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
-              <Menu.Item className={itemClass} onClick={() => router.push(`/workflows/${id}`)}>
+            <Menu.Popup className={menuPopupClass}>
+              <Menu.Item className={menuItemClass} onClick={() => router.push(`/workflows/${id}`)}>
                 <ExternalLink className="text-muted-foreground size-4" />
                 열기
               </Menu.Item>
-              <Menu.Item className={itemClass} onClick={onRename}>
+              <Menu.Item className={menuItemClass} onClick={onRename}>
                 <Pencil className="text-muted-foreground size-4" />
                 이름 바꾸기
               </Menu.Item>
-              <Menu.Item className={itemClass} onClick={duplicate}>
+              <Menu.Item className={menuItemClass} onClick={duplicate}>
                 <Copy className="text-muted-foreground size-4" />
                 복제
               </Menu.Item>
-              <Menu.Item className={itemClass} onClick={() => setShowApi(true)}>
+              <Menu.Item className={menuItemClass} onClick={() => setShowApi(true)}>
                 <Code className="text-muted-foreground size-4" />
                 외부에서 쓰기 (API·웹사이트)
               </Menu.Item>
-              <Menu.Item className={itemClass} onClick={toggleProtection}>
+              <Menu.Item className={menuItemClass} onClick={toggleProtection}>
                 {deleteProtected ? (
                   <LockOpen className="text-muted-foreground size-4" />
                 ) : (
@@ -89,7 +113,7 @@ export function WorkflowCardMenu({ id, name, graph, deleteProtected, published, 
               <Menu.Separator className="bg-border mx-1 my-1 h-px" />
               <Menu.Item
                 disabled={deleteProtected}
-                className={`${itemClass} text-destructive data-highlighted:bg-destructive/10 data-disabled:text-muted-foreground data-disabled:opacity-60`}
+                className={menuDangerItemClass}
                 onClick={remove}
               >
                 <Trash2 className="size-4" />

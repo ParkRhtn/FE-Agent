@@ -16,7 +16,7 @@ import {
   type Edge,
 } from "@xyflow/react";
 import { cn } from "cn";
-import { Braces, ChevronRight, Clock, Lock, LockOpen, Pencil, Play, Rocket, Square, Trash2, X } from "lucide-react";
+import { Braces, ChevronRight, Clock, Ellipsis, Lock, LockOpen, Pencil, Play, Rocket, Square, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { FeedbackButtons } from "@/components/feedback-buttons";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { DiffPanel } from "@/components/workflow/diff-panel";
 import { NodeConfig } from "@/components/workflow/node-config";
 import { JsonDialog } from "@/components/workflow/json-dialog";
 import { RunHistory } from "@/components/workflow/run-history";
@@ -45,8 +46,14 @@ import {
   type RunStatus,
   type Workflow,
 } from "@/lib/workflow";
+import { diffGraphs } from "@/lib/workflow-diff";
 import { nextRunLabel, scheduleLabel } from "@/lib/schedule";
 import { useStoredFlag } from "@/lib/use-stored-flag";
+import { useConfirm } from "@/components/ui/confirm";
+import { apiErrorMessage } from "@/lib/api/errors";
+import { Menu } from "@base-ui/react/menu";
+import { menuDangerItemClass, menuItemClass, menuPopupClass } from "@/components/ui/menu-styles";
+import { useSaveShortcuts } from "@/lib/use-save-shortcuts";
 
 type EditorProps = {
   workflow: Workflow;
@@ -71,7 +78,7 @@ type RunState = {
   output?: string;
   errors?: string[];
 };
-type Panel = "config" | "run" | "history" | "schedule";
+type Panel = "config" | "run" | "history" | "schedule" | "diff";
 
 const TAKEN_EDGE = "#10b981";
 
@@ -113,13 +120,19 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
   const [showJson, setShowJson] = useState(false);
   // 배포본: 외부 API·공개 링크는 이것만 실행한다 (편집본을 저장해도 바뀌지 않는다)
   const [publishedAt, setPublishedAt] = useState(workflow.published_at ?? null);
-  const [unpublishedChanges, setUnpublishedChanges] = useState(workflow.has_unpublished_changes);
+  const [publishedGraph, setPublishedGraph] = useState(workflow.published_graph ?? null);
   const [publishing, setPublishing] = useState(false);
+  const confirm = useConfirm();
   const abortRef = useRef<AbortController | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const dirty = snapshot(name, nodes, edges) !== savedSnapshot;
+  const diff = useMemo(
+    () => (publishedGraph ? diffGraphs(publishedGraph, fromFlow(nodes, edges)) : null),
+    [publishedGraph, nodes, edges],
+  );
+  const changedFromPublished = (diff?.count ?? 0) > 0;
   const selected = nodes.find((n) => n.id === selectedId);
   const running = run.status === "running";
   const stepById = useMemo(() => new Map(steps.map((s) => [s.id, s])), [steps]);
@@ -129,19 +142,20 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
     () =>
       nodes.map((n) => {
         const step = stepById.get(n.id);
-        return step
+        const change = panel === "diff" ? diff?.nodes.find((c) => c.id === n.id)?.change : undefined;
+        const marked = change === "added" || change === "changed" ? change : undefined;
+        return step || marked
           ? {
               ...n,
               data: {
                 ...n.data,
-                _status: step.status,
-                _output: step.output,
-                _error: step.error,
+                ...(step && { _status: step.status, _output: step.output, _error: step.error }),
+                ...(marked && { _diff: marked }),
               },
             }
           : n;
       }),
-    [nodes, stepById],
+    [nodes, stepById, panel, diff],
   );
   const displayEdges = useMemo(() => {
     if (steps.length === 0) return edges;
@@ -221,9 +235,27 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
       return false;
     }
     setSavedSnapshot(snapshot(name, nodes, edges));
-    if (publishedAt) setUnpublishedChanges(true);
     router.refresh();
     return true;
+  };
+
+  useSaveShortcuts({ dirty, canSave: dirty && !saving && !running, onSave: save });
+
+  /** 편집 화면을 배포본으로 되돌린다. 저장해야 편집본에 반영된다. */
+  const revertToPublished = async () => {
+    if (!publishedGraph) return;
+    const ok = await confirm({
+      title: "배포본으로 되돌릴까요?",
+      description: "지금 고친 내용은 사라집니다. 되돌린 뒤 저장해야 편집본에도 반영됩니다.",
+      confirmLabel: "되돌리기",
+      destructive: true,
+    });
+    if (!ok) return;
+    const reverted = toFlow(publishedGraph);
+    setNodes(reverted.nodes);
+    setEdges(reverted.edges);
+    setSelectedId(null);
+    toast.success("배포본으로 되돌렸습니다", { description: "저장을 누르면 편집본에도 반영됩니다." });
   };
 
   /** 저장한 편집본을 배포본으로. 저장 안 된 변경이 있으면 먼저 저장한다. */
@@ -248,7 +280,7 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
     }
     const first = !publishedAt;
     setPublishedAt(data.published_at ?? null);
-    setUnpublishedChanges(false);
+    setPublishedGraph(fromFlow(nodes, edges)); // 방금 저장한 편집본이 배포본이 됐다
     toast.success(first ? "배포했습니다" : "새 버전을 배포했습니다", {
       description: "외부 API·공개 링크가 지금 저장된 내용으로 실행됩니다. 목록 카드 메뉴 → '외부에서 쓰기'에서 연결하세요.",
     });
@@ -262,15 +294,31 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
       params: { path: { workflow_id: workflow.id } },
       body: { delete_protected: next },
     });
-    if (error) setDeleteProtected(!next);
+    if (error) {
+      setDeleteProtected(!next);
+      toast.error("삭제 보호를 바꾸지 못했습니다", { description: apiErrorMessage(error) });
+      return;
+    }
+    toast.success(next ? "삭제 보호를 켰습니다" : "삭제 보호를 풀었습니다");
   };
 
   const remove = async () => {
     if (deleteProtected) return;
-    if (!confirm(`'${name}' 워크플로우를 삭제할까요? 되돌릴 수 없습니다.`)) return;
-    await api.DELETE("/api/v1/workflows/{workflow_id}", {
+    const ok = await confirm({
+      title: `'${name}' 워크플로우를 삭제할까요?`,
+      description: "되돌릴 수 없습니다.",
+      confirmLabel: "삭제",
+      destructive: true,
+    });
+    if (!ok) return;
+    const { error } = await api.DELETE("/api/v1/workflows/{workflow_id}", {
       params: { path: { workflow_id: workflow.id } },
     });
+    if (error) {
+      toast.error("삭제하지 못했습니다", { description: apiErrorMessage(error) });
+      return;
+    }
+    toast.success(`'${name}'을 삭제했습니다`);
     router.push("/workflows");
     router.refresh();
   };
@@ -451,78 +499,95 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
           <span className={cn("size-1.5 rounded-full", dirty ? "bg-amber-500" : "bg-emerald-500")} />
           {saving ? "저장 중" : dirty ? "저장 안 됨" : "저장됨"}
         </span>
-        <span
+        <button
+          type="button"
+          onClick={() => publishedAt && setPanel(panel === "diff" ? null : "diff")}
+          disabled={!publishedAt}
           className={cn(
-            "flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[11px]",
+            "flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[11px] disabled:cursor-default",
             !publishedAt
               ? "text-muted-foreground bg-muted"
-              : dirty || unpublishedChanges
-                ? "bg-amber-50 text-amber-800"
-                : "bg-sky-50 text-sky-800",
+              : changedFromPublished
+                ? "bg-amber-50 text-amber-800 hover:bg-amber-100"
+                : "bg-sky-50 text-sky-800 hover:bg-sky-100",
           )}
-          title="외부 API·공개 링크는 배포본만 실행합니다"
+          title={publishedAt ? "눌러서 배포본과 비교" : "외부 API·공개 링크는 배포본만 실행합니다"}
         >
           <Rocket className="size-3" />
-          {!publishedAt ? "배포 전" : dirty || unpublishedChanges ? "배포본과 다름" : "배포됨"}
-        </span>
+          {!publishedAt ? "배포 전" : changedFromPublished ? `배포본과 다름 · ${diff?.count}` : "배포됨"}
+        </button>
         <span className="flex-1" />
-        <button
-          type="button"
-          onClick={() => setPanel(panel === "schedule" ? null : "schedule")}
-          aria-pressed={panel === "schedule"}
-          title={schedule?.enabled && nextRunAt ? `다음 실행: ${nextRunLabel(nextRunAt)}` : "예약 실행 설정"}
-          className={cn(
-            "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs",
-            schedule?.enabled
-              ? "bg-emerald-50 font-medium text-emerald-800 hover:bg-emerald-100"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          )}
+        {schedule?.enabled && (
+          <button
+            type="button"
+            onClick={() => setPanel(panel === "schedule" ? null : "schedule")}
+            aria-pressed={panel === "schedule"}
+            title={nextRunAt ? `다음 실행: ${nextRunLabel(nextRunAt)}` : "예약 실행 설정"}
+            className="flex shrink-0 items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800 hover:bg-emerald-100"
+          >
+            <Clock className="size-3.5" />
+            {scheduleLabel(schedule)}
+          </button>
+        )}
+        {deleteProtected && (
+          <span
+            className="flex shrink-0 items-center gap-1 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-800"
+            title="삭제 보호 중 (더보기 메뉴에서 풀 수 있습니다)"
+          >
+            <Lock className="size-3.5" />
+            보호
+          </span>
+        )}
+        <Menu.Root>
+          <Menu.Trigger
+            aria-label="더보기"
+            title="더보기"
+            className="text-muted-foreground hover:bg-muted hover:text-foreground data-popup-open:bg-muted focus-visible:ring-ring/50 flex size-8 shrink-0 items-center justify-center rounded-md outline-none focus-visible:ring-3"
+          >
+            <Ellipsis className="size-4" />
+          </Menu.Trigger>
+          <Menu.Portal>
+            <Menu.Positioner className="z-50 outline-hidden" sideOffset={6} align="end">
+              <Menu.Popup className={menuPopupClass}>
+                <Menu.Item className={menuItemClass} onClick={() => setPanel("schedule")}>
+                  <Clock className="text-muted-foreground size-4" />
+                  예약 실행 설정
+                </Menu.Item>
+                <Menu.Item className={menuItemClass} onClick={() => setShowJson(true)}>
+                  <Braces className="text-muted-foreground size-4" />
+                  JSON 보기
+                </Menu.Item>
+                <Menu.Item className={menuItemClass} onClick={toggleProtection}>
+                  {deleteProtected ? (
+                    <LockOpen className="text-muted-foreground size-4" />
+                  ) : (
+                    <Lock className="text-muted-foreground size-4" />
+                  )}
+                  {deleteProtected ? "삭제 보호 풀기" : "삭제 보호"}
+                </Menu.Item>
+                <Menu.Separator className="bg-border mx-1 my-1 h-px" />
+                <Menu.Item className={menuDangerItemClass} disabled={deleteProtected} onClick={remove}>
+                  <Trash2 className="size-4" />
+                  {deleteProtected ? "삭제 (보호 중)" : "삭제"}
+                </Menu.Item>
+              </Menu.Popup>
+            </Menu.Positioner>
+          </Menu.Portal>
+        </Menu.Root>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={save}
+          disabled={!dirty || saving || running}
+          title="저장 (⌘S / Ctrl+S)"
         >
-          <Clock className="size-3.5" />
-          {schedule?.enabled ? scheduleLabel(schedule) : "예약"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowJson(true)}
-          aria-label="JSON 보기"
-          title="JSON 보기"
-          className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
-        >
-          <Braces className="size-4" />
-        </button>
-        <button
-          type="button"
-          onClick={toggleProtection}
-          aria-pressed={deleteProtected}
-          aria-label={deleteProtected ? "삭제 보호 풀기" : "삭제 보호 켜기"}
-          title={deleteProtected ? "삭제 보호 중 (눌러서 풀기)" : "삭제 보호 켜기"}
-          className={cn(
-            "rounded-md p-1.5",
-            deleteProtected
-              ? "bg-amber-50 text-amber-700 hover:bg-amber-100"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          )}
-        >
-          {deleteProtected ? <Lock className="size-4" /> : <LockOpen className="size-4" />}
-        </button>
-        <button
-          type="button"
-          onClick={remove}
-          disabled={deleteProtected}
-          aria-label="워크플로우 삭제"
-          title={deleteProtected ? "삭제 보호 중에는 지울 수 없습니다" : "워크플로우 삭제"}
-          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md p-1.5 disabled:pointer-events-none disabled:opacity-30"
-        >
-          <Trash2 className="size-4" />
-        </button>
-        <Button variant="outline" size="sm" onClick={save} disabled={!dirty || saving || running}>
           저장
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={publish}
-          disabled={publishing || saving || running || (Boolean(publishedAt) && !dirty && !unpublishedChanges)}
+          disabled={publishing || saving || running || (Boolean(publishedAt) && !changedFromPublished)}
           title={dirty ? "저장하고 배포합니다" : "지금 저장된 내용을 외부 API·공개 링크에 반영합니다"}
         >
           <Rocket className="size-3.5" />
@@ -614,6 +679,7 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
                   ["run", "실행"],
                   ["history", "기록"],
                   ["schedule", "예약"],
+                  ...(publishedAt ? ([["diff", "비교"]] as const) : []),
                 ] as const
               ).map(([value, label]) => (
                 <button
@@ -647,6 +713,19 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
             </div>
 
             <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-4">
+              {panel === "diff" && diff && publishedAt && (
+                <DiffPanel
+                  diff={diff}
+                  publishedAt={publishedAt}
+                  busy={publishing || saving || running}
+                  onRevert={revertToPublished}
+                  onPublish={publish}
+                  onSelect={(id) => {
+                    setSelectedId(id);
+                    setPanel("config");
+                  }}
+                />
+              )}
               {panel === "config" &&
                 (selected ? (
                   <NodeConfig
