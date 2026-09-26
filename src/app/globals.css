@@ -10,7 +10,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-pretendard), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -30,6 +30,14 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-strong: var(--success-strong);
+  --color-warning: var(--warning);
+  --color-warning-strong: var(--warning-strong);
+  --color-info: var(--info);
+  --color-info-strong: var(--info-strong);
+  --color-canvas: var(--canvas);
+  --color-canvas-dot: var(--canvas-dot);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -67,6 +75,16 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
+  /* 상태 색: 기본은 아이콘·글자, strong 은 옅은 배경(/10) 위 글자 */
+  --success: oklch(0.596 0.145 163.225);
+  --success-strong: oklch(0.432 0.095 166.913);
+  --warning: oklch(0.666 0.179 58.318);
+  --warning-strong: oklch(0.473 0.137 46.201);
+  --info: oklch(0.588 0.158 241.966);
+  --info-strong: oklch(0.443 0.11 240.79);
+  /* 워크플로 캔버스 바탕과 점 격자 */
+  --canvas: oklch(0.975 0.001 286.375);
+  --canvas-dot: oklch(0.871 0.006 286.286);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -102,6 +120,14 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  --success: oklch(0.765 0.177 163.223);
+  --success-strong: oklch(0.845 0.143 164.978);
+  --warning: oklch(0.828 0.189 84.429);
+  --warning-strong: oklch(0.879 0.169 91.605);
+  --info: oklch(0.746 0.16 232.661);
+  --info-strong: oklch(0.828 0.111 230.318);
+  --canvas: oklch(0.18 0 0);
+  --canvas-dot: oklch(1 0 0 / 12%);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);

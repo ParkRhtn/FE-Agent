@@ -123,7 +123,7 @@ export function EmbedSettings({
               <CopyButton text={iframe} />
             </div>
           </div>
-          <pre className="overflow-x-auto rounded-lg bg-zinc-50 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-zinc-800">
+          <pre className="overflow-x-auto rounded-lg bg-muted/50 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground">
             {iframe}
           </pre>
         </section>

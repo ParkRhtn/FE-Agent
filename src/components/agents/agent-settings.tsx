@@ -100,14 +100,16 @@ export function AgentSettings({
     <aside className="bg-background flex w-[380px] shrink-0 flex-col border-l" aria-label="에이전트 설정">
       <div className="flex h-12 shrink-0 items-center justify-between border-b pr-2 pl-4">
         <h2 className="text-sm font-semibold">에이전트 설정</h2>
-        <button
+        <Button
           type="button"
           onClick={onClose}
           aria-label="설정 닫기"
-          className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground"
         >
           <X className="size-4" />
-        </button>
+        </Button>
       </div>
 
       <form
@@ -191,14 +193,16 @@ export function AgentSettings({
             })}
           </div>
         </div>
-        <button
+        <Button
           type="button"
           onClick={remove}
-          className="text-muted-foreground hover:text-destructive flex items-center gap-1.5 self-start text-xs"
+          variant="ghost-destructive"
+          size="xs"
+          className="-ml-2 self-start"
         >
           <Trash2 className="size-3.5" />
           에이전트 삭제
-        </button>
+        </Button>
       </form>
 
       <div className="flex shrink-0 items-center gap-2 border-t p-3">
@@ -206,7 +210,7 @@ export function AgentSettings({
           <p className="text-destructive flex-1 text-xs">{error}</p>
         ) : (
           <span className="text-muted-foreground flex flex-1 items-center gap-1.5 text-xs">
-            <span className={cn("size-1.5 rounded-full", dirty ? "bg-amber-500" : "bg-emerald-500")} />
+            <span className={cn("size-1.5 rounded-full", dirty ? "bg-warning" : "bg-success")} />
             {dirty ? "저장하지 않은 변경이 있습니다" : "저장됨, 다음 메시지부터 적용"}
           </span>
         )}

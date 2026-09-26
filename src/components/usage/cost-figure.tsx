@@ -13,7 +13,7 @@ export function CostFigure({ value, className }: { value: number; className?: st
     <span className={cn("tabular-nums", className)} aria-label={text}>
       {match ? (
         <>
-          <span className="text-zinc-300">{match[1]}</span>
+          <span className="text-muted-foreground/60">{match[1]}</span>
           {match[2]}
         </>
       ) : (

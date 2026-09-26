@@ -40,7 +40,7 @@ function CopyAnswer({ text }: { text: string }) {
       }}
       className="text-muted-foreground hover:bg-muted hover:text-foreground -ml-1.5 flex w-fit items-center gap-1 rounded-md px-1.5 py-1 text-xs"
     >
-      {copied ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
+      {copied ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />}
       {copied ? "복사됨" : "복사"}
     </button>
   );
@@ -90,7 +90,7 @@ export function EmbedRunner({ token, name, description }: { token: string; name:
   };
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col bg-white">
+    <div className="flex h-full min-h-0 w-full flex-col bg-background">
       <header className="flex shrink-0 items-center gap-3 border-b bg-white/90 px-4 py-3 backdrop-blur">
         <Avatar className="size-9 rounded-xl [&_svg]:size-5" />
         <div className="flex min-w-0 flex-1 flex-col">
@@ -149,7 +149,7 @@ export function EmbedRunner({ token, name, description }: { token: string; name:
                     </>
                   )}
                   {turn.status === "error" && (
-                    <p className="w-fit rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{turn.error}</p>
+                    <p className="w-fit rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">{turn.error}</p>
                   )}
                 </div>
               </div>
@@ -166,7 +166,7 @@ export function EmbedRunner({ token, name, description }: { token: string; name:
           submit();
         }}
       >
-        <div className="focus-within:border-ring focus-within:ring-ring/30 flex items-end gap-2 rounded-2xl border bg-white p-2 shadow-sm focus-within:ring-3">
+        <div className="focus-within:border-ring focus-within:ring-ring/30 flex items-end gap-2 rounded-2xl border bg-background p-2 shadow-sm focus-within:ring-3">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value.slice(0, MAX_LENGTH))}

@@ -24,7 +24,7 @@ export default async function EmbedPage({ params }: PageProps<"/embed/[token]">)
   const embed = await loadEmbed(token);
   if (!embed) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-2 bg-white p-6 text-center">
+      <main className="flex flex-1 flex-col items-center justify-center gap-2 bg-background p-6 text-center">
         <p className="text-sm font-medium">링크를 찾을 수 없습니다</p>
         <p className="text-muted-foreground max-w-xs text-xs">
           주소가 바뀌었거나 지금은 사용할 수 없는 링크입니다. 링크를 알려 준 곳에 문의하세요.

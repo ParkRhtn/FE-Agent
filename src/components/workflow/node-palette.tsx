@@ -3,6 +3,7 @@
 import { cn } from "cn";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import type { Agent } from "@/lib/api/client";
 import { NODE_META, type NodeData, type NodeKind } from "@/lib/workflow";
 
@@ -67,14 +68,16 @@ export function NodePalette({ agents, collapsed, disabled, onToggle, onAdd }: No
   if (collapsed) {
     return (
       <aside className="bg-background flex w-12 shrink-0 flex-col items-center gap-1 border-r py-2">
-        <button
+        <Button
           type="button"
           onClick={onToggle}
           aria-label="노드 목록 펼치기"
-          className="text-muted-foreground hover:bg-muted hover:text-foreground mb-1 rounded-md p-1.5"
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground mb-1"
         >
           <PanelLeftOpen className="size-4" />
-        </button>
+        </Button>
         {sections
           .flatMap((s) => s.items)
           .map((item) => {
@@ -103,14 +106,16 @@ export function NodePalette({ agents, collapsed, disabled, onToggle, onAdd }: No
     <aside className="bg-background flex w-64 shrink-0 flex-col border-r">
       <div className="flex h-11 shrink-0 items-center justify-between border-b px-3">
         <span className="text-sm font-semibold">노드</span>
-        <button
+        <Button
           type="button"
           onClick={onToggle}
           aria-label="노드 목록 접기"
-          className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground"
         >
           <PanelLeftClose className="size-4" />
-        </button>
+        </Button>
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-2">
         {sections.map((section) => (

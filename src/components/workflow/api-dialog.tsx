@@ -7,9 +7,9 @@ import { useEffect, useRef, useState, useTransition } from "react";
 
 import { CopyButton } from "@/components/copy-button";
 import { errorText } from "@/components/settings/model-settings";
+import { Button } from "@/components/ui/button";
 import { EmbedSettings } from "@/components/workflow/embed-settings";
 import { PublishNotice } from "@/components/workflow/publish-notice";
-import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { type Snippet, workflowRunSnippets } from "@/lib/external-api";
 
@@ -100,14 +100,16 @@ export function ApiDialog({
             ))}
           </div>
         </div>
-        <button
+        <Button
           type="button"
           onClick={onClose}
           aria-label="닫기"
-          className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground"
         >
           <X className="size-4" />
-        </button>
+        </Button>
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-4">
@@ -146,7 +148,7 @@ export function ApiDialog({
                 <CopyButton text={snippet.code} />
               </div>
             </div>
-            <pre className="overflow-x-auto rounded-lg bg-zinc-50 p-3 font-mono text-xs leading-relaxed text-zinc-800">
+            <pre className="overflow-x-auto rounded-lg bg-muted/50 p-3 font-mono text-xs leading-relaxed text-foreground">
               {snippet.code}
             </pre>
             <p className="text-muted-foreground text-xs">
@@ -180,7 +182,7 @@ export function ApiDialog({
               <pre
                 className={cn(
                   "overflow-x-auto rounded-lg p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap",
-                  result.status === "done" ? "bg-emerald-50 text-emerald-950" : "bg-destructive/5 text-destructive",
+                  result.status === "done" ? "bg-success/10 text-success-strong" : "bg-destructive/5 text-destructive",
                 )}
               >
                 {JSON.stringify(result, null, 2)}

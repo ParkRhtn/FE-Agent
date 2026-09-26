@@ -60,23 +60,25 @@ export function JsonDialog({
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={copy}>
-          {copied ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
+          {copied ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />}
           {copied ? "복사됨" : "복사"}
         </Button>
         <Button variant="outline" size="sm" onClick={download}>
           <Download className="size-3.5" />
           다운로드
         </Button>
-        <button
+        <Button
           type="button"
           onClick={onClose}
           aria-label="닫기"
-          className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground"
         >
           <X className="size-4" />
-        </button>
+        </Button>
       </header>
-      <pre className="min-h-0 flex-1 overflow-auto bg-zinc-50 p-4 font-mono text-xs leading-relaxed text-zinc-800">
+      <pre className="min-h-0 flex-1 overflow-auto bg-muted/50 p-4 font-mono text-xs leading-relaxed text-foreground">
         {json}
       </pre>
     </dialog>

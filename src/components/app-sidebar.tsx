@@ -15,6 +15,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { LogoMark } from "@/components/logo";
+import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/user-menu";
 import { useStoredFlag } from "@/lib/use-stored-flag";
 
@@ -110,15 +111,17 @@ export function AppSidebar({ email }: { email?: string }) {
               <LogoMark />
               Agent
             </Link>
-            <button
+            <Button
               type="button"
               onClick={toggle}
               aria-label="메뉴 접기"
               title="메뉴 접기"
-              className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground"
             >
               <PanelLeftClose className="size-4" />
-            </button>
+            </Button>
           </>
         )}
       </div>

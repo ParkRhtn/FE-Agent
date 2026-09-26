@@ -3,6 +3,7 @@
 import { cn } from "cn";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { formatCost, formatNumber } from "@/lib/format";
 
 type Day = { date: string; cost: number; tokens: number };
@@ -40,7 +41,7 @@ export function DailyCostChart({ days }: { days: Day[] }) {
     <div className="flex flex-col gap-2">
       {/* 위쪽 여백은 가장 큰 막대의 금액 자리 */}
       <div className="relative pt-6" style={{ height: HEIGHT + 24 }} onPointerLeave={() => setActive(null)}>
-        <div className="absolute inset-x-0 bottom-0 h-px bg-zinc-200" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-border" />
         <div className="absolute inset-x-0 top-6 bottom-0 flex items-end gap-[2px]">
           {days.map((d, i) => (
             <div
@@ -63,12 +64,12 @@ export function DailyCostChart({ days }: { days: Day[] }) {
                 />
               ) : (
                 // 쓰지 않은 날도 날짜가 있다는 걸 보여 주는 점
-                <div className={cn("mb-1 size-1 rounded-full", active === i ? "bg-zinc-500" : "bg-zinc-300")} />
+                <div className={cn("mb-1 size-1 rounded-full", active === i ? "bg-muted-foreground" : "bg-muted-foreground/30")} />
               )}
               {i === peak && (
                 <span
                   className={cn(
-                    "absolute bottom-full mb-1 text-[11px] font-medium whitespace-nowrap text-zinc-700 tabular-nums",
+                    "absolute bottom-full mb-1 text-[11px] font-medium whitespace-nowrap text-foreground tabular-nums",
                     // 좁은 칸의 가장자리 막대면 금액을 안쪽으로 붙인다
                     !roomy && i > days.length * 0.85
                       ? "right-0"
@@ -86,18 +87,18 @@ export function DailyCostChart({ days }: { days: Day[] }) {
 
         {hovered && (
           <div
-            className="pointer-events-none absolute top-0 z-10 flex -translate-x-1/2 flex-col rounded-md border bg-white px-2.5 py-1.5 text-xs whitespace-nowrap shadow-md"
+            className="pointer-events-none absolute top-0 z-10 flex -translate-x-1/2 flex-col rounded-md border bg-background px-2.5 py-1.5 text-xs whitespace-nowrap shadow-md"
             style={{ left: `${Math.min(Math.max(((active! + 0.5) / days.length) * 100, 10), 90)}%` }}
           >
             <span className="text-sm font-semibold tabular-nums">{formatCost(hovered.cost)}</span>
-            <span className="text-zinc-500">
+            <span className="text-muted-foreground">
               {dateWithWeekday(hovered.date)}, 토큰 {formatNumber(hovered.tokens)}개
             </span>
           </div>
         )}
       </div>
 
-      <div className="relative h-4 text-[11px] text-zinc-500">
+      <div className="relative h-4 text-[11px] text-muted-foreground">
         {days.map((d, i) =>
           edges.has(i) ? (
             <span
@@ -114,18 +115,20 @@ export function DailyCostChart({ days }: { days: Day[] }) {
         )}
       </div>
 
-      <button
+      <Button
         type="button"
         onClick={() => setShowTable(!showTable)}
         aria-expanded={showTable}
-        className="self-start text-xs text-zinc-500 underline-offset-2 hover:text-zinc-900 hover:underline"
+        variant="link"
+        size="inline"
+        className="text-muted-foreground hover:text-foreground self-start text-xs font-normal"
       >
         {showTable ? "날짜별 표 닫기" : "날짜별 표로 보기"}
-      </button>
+      </Button>
       {showTable && (
         <div className="max-h-64 overflow-y-auto border-y">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-white text-xs text-zinc-500">
+            <thead className="sticky top-0 bg-background text-xs text-muted-foreground">
               <tr>
                 <th className="py-2 text-left font-medium">날짜</th>
                 <th className="py-2 text-right font-medium">토큰</th>

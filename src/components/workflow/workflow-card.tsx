@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { apiErrorMessage } from "@/lib/api/errors";
 
 const STEP_KINDS: NodeKind[] = ["llm", "agent", "tool", "condition"];
-export const canvasBg = "bg-zinc-50 bg-[radial-gradient(#d4d4d8_1px,transparent_1px)] [background-size:14px_14px]";
+export const canvasBg = "bg-canvas bg-[radial-gradient(var(--canvas-dot)_1px,transparent_1px)] [background-size:14px_14px]";
 
 export function WorkflowCard({ workflow, updatedLabel }: { workflow: Workflow; updatedLabel: string }) {
   const router = useRouter();
@@ -96,7 +96,7 @@ export function WorkflowCard({ workflow, updatedLabel }: { workflow: Workflow; u
             )}
             {updatedLabel} 수정
             {workflow.schedule?.enabled && (
-              <span className="flex items-center gap-0.5 font-medium text-emerald-700">
+              <span className="flex items-center gap-0.5 font-medium text-success">
                 <Clock className="size-3" />
                 {scheduleLabel(workflow.schedule)}
               </span>

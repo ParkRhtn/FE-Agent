@@ -16,9 +16,9 @@ function Breakdown({ title, rows, empty }: { title: string; rows: Row[]; empty: 
   const max = Math.max(...rows.map((r) => r.cost), 0);
   return (
     <section className="flex min-w-0 flex-col">
-      <h3 className="border-b pb-2 text-sm font-medium text-zinc-500">{title}</h3>
+      <h3 className="border-b pb-2 text-sm font-medium text-muted-foreground">{title}</h3>
       {rows.length === 0 ? (
-        <p className="py-4 text-sm text-zinc-500">{empty}</p>
+        <p className="py-4 text-sm text-muted-foreground">{empty}</p>
       ) : (
         <ul>
           {rows.map((r) => (
@@ -27,13 +27,13 @@ function Breakdown({ title, rows, empty }: { title: string; rows: Row[]; empty: 
                 <span className="min-w-0 text-sm font-medium break-words">{r.name}</span>
                 <CostFigure value={r.cost} className="shrink-0 text-sm font-semibold" />
               </div>
-              <span className="h-1 rounded-full bg-zinc-100">
+              <span className="h-1 rounded-full bg-muted">
                 <span
                   className="block h-1 rounded-full bg-[#059669]"
                   style={{ width: max && r.cost ? `${Math.max((r.cost / max) * 100, 1)}%` : 0 }}
                 />
               </span>
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-muted-foreground">
                 호출 {formatNumber(r.calls)}번, 토큰 {formatNumber(r.tokens)}개
                 {r.unpriced_calls ? `, 가격 정보 없음 ${formatNumber(r.unpriced_calls)}번` : ""}
               </span>
@@ -51,11 +51,11 @@ export default async function UsagePage({ searchParams }: PageProps<"/usage">) {
   const { data: usage } = await backend.GET("/api/v1/usage", { params: { query: { days } } });
 
   return (
-    <div className="flex-1 overflow-y-auto bg-white">
+    <div className="flex-1 overflow-y-auto bg-background">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-8">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-lg font-semibold">사용량</h1>
-          <nav className="flex rounded-lg bg-zinc-100 p-0.5 text-sm" aria-label="기간">
+          <nav className="flex rounded-lg bg-muted p-0.5 text-sm" aria-label="기간">
             {RANGES.map((r) => (
               <Link
                 key={r}
@@ -63,7 +63,7 @@ export default async function UsagePage({ searchParams }: PageProps<"/usage">) {
                 aria-current={r === days ? "page" : undefined}
                 className={cn(
                   "rounded-md px-3 py-1",
-                  r === days ? "bg-white font-medium shadow-xs" : "text-zinc-500 hover:text-zinc-900",
+                  r === days ? "bg-background font-medium shadow-xs" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {r}일
@@ -84,19 +84,19 @@ export default async function UsagePage({ searchParams }: PageProps<"/usage">) {
           <>
             <section className="flex flex-col gap-3">
               <CostFigure value={usage.total_cost ?? 0} className="text-5xl font-semibold tracking-tight" />
-              <p className="max-w-prose text-zinc-600">
+              <p className="max-w-prose text-foreground/75">
                 {usage.calls ? (
                   <>
                     지난 {days}일 동안 모델을{" "}
-                    <strong className="font-semibold text-zinc-900">{formatNumber(usage.calls)}번</strong> 불러 토큰{" "}
-                    <strong className="font-semibold text-zinc-900">{formatNumber(usage.total_tokens ?? 0)}개</strong>를
+                    <strong className="font-semibold text-foreground">{formatNumber(usage.calls)}번</strong> 불러 토큰{" "}
+                    <strong className="font-semibold text-foreground">{formatNumber(usage.total_tokens ?? 0)}개</strong>를
                     썼습니다.
                   </>
                 ) : (
                   <>지난 {days}일 동안 모델을 부르지 않았습니다. 대화나 워크플로우를 실행하면 여기에 쌓입니다.</>
                 )}
               </p>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-muted-foreground/70">
                 금액은 호출할 때 받은 토큰 수에 모델별 가격을 곱한 달러 값입니다.
                 {usage.unpriced_calls ? (
                   <> 가격을 모르는 모델 호출 {formatNumber(usage.unpriced_calls)}번은 금액에 들어가지 않았습니다.</>

@@ -63,7 +63,7 @@ export function SchedulePanel({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-start gap-3">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-success/10 text-success">
           <Clock className="size-4" />
         </span>
         <div className="flex flex-col gap-0.5">
@@ -78,7 +78,7 @@ export function SchedulePanel({
         <div
           className={cn(
             "rounded-lg px-3 py-2 text-sm",
-            schedule.enabled && nextRunAt ? "bg-emerald-50 text-emerald-900" : "bg-muted text-muted-foreground",
+            schedule.enabled && nextRunAt ? "bg-success/10 text-success-strong" : "bg-muted text-muted-foreground",
           )}
         >
           {schedule.enabled && nextRunAt ? <>다음 실행: {nextRunLabel(nextRunAt)}</> : "예약이 꺼져 있습니다."}
@@ -94,12 +94,12 @@ export function SchedulePanel({
           onClick={() => setEnabled(!enabled)}
           className={cn(
             "relative h-5 w-9 shrink-0 rounded-full transition-colors",
-            enabled ? "bg-emerald-600" : "bg-zinc-300",
+            enabled ? "bg-success" : "bg-muted-foreground/30",
           )}
         >
           <span
             className={cn(
-              "absolute top-0.5 size-4 rounded-full bg-white shadow-sm transition-[left]",
+              "absolute top-0.5 size-4 rounded-full bg-background shadow-sm transition-[left]",
               enabled ? "left-[18px]" : "left-0.5",
             )}
           />
@@ -129,9 +129,9 @@ export function SchedulePanel({
               className={cn(
                 "flex-1 rounded-md border py-1.5 text-sm",
                 days.includes(d)
-                  ? "border-emerald-600 bg-emerald-600 font-medium text-white"
+                  ? "border-success bg-success font-medium text-white"
                   : "text-muted-foreground hover:bg-muted",
-                d >= 5 && !days.includes(d) && "text-rose-500/80",
+                d >= 5 && !days.includes(d) && "text-destructive/70",
               )}
             >
               {label}

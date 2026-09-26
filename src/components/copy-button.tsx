@@ -17,7 +17,7 @@ export function CopyButton({ text, label = "복사" }: { text: string; label?: s
         setTimeout(() => setCopied(false), 1500);
       }}
     >
-      {copied ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
+      {copied ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />}
       {copied ? "복사됨" : label}
     </Button>
   );

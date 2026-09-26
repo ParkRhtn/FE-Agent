@@ -40,7 +40,7 @@ export function PublishNotice({
     });
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+    <div className="flex flex-col gap-2 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning-strong">
       <div className="flex items-center gap-3">
         <p className="min-w-0 flex-1">
           아직 배포하지 않아 {what} 없습니다. 배포하면 지금 저장된 내용이 외부에 공개되고, 이후 화면에서 고쳐도 다시 배포하기
@@ -52,7 +52,7 @@ export function PublishNotice({
         </Button>
       </div>
       {errors.length > 0 && (
-        <ul className="list-disc pl-5 text-xs text-rose-700">
+        <ul className="list-disc pl-5 text-xs text-destructive">
           {errors.map((e) => (
             <li key={e}>{e}</li>
           ))}

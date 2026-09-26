@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 
-import { login, signup, type AuthState } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
+import { login, signup, type AuthState } from "@/app/login/actions";
 
 const inputClass = "bg-background w-full rounded-lg border px-2.5 py-2 text-sm";
 
@@ -62,13 +62,15 @@ export function LoginForm({ next, notice }: { next?: string; notice?: string }) 
         {pending ? "처리 중..." : isLogin ? "로그인" : "가입하기"}
       </Button>
 
-      <button
+      <Button
         type="button"
         onClick={() => setMode(isLogin ? "signup" : "login")}
-        className="text-muted-foreground text-sm hover:underline"
+        variant="link"
+        size="inline"
+        className="text-muted-foreground self-center font-normal"
       >
         {isLogin ? "계정이 없으신가요? 회원가입" : "이미 계정이 있으신가요? 로그인"}
-      </button>
+      </Button>
     </form>
   );
 }

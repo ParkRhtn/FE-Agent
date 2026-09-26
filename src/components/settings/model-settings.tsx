@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { ModelSelect } from "@/components/model-select";
-import { Button } from "@/components/ui/button";
 import { api, type ModelOption, type Provider } from "@/lib/api/client";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/components/ui/confirm";
 
 type Kind = "anthropic" | "openai" | "openai_compatible";
@@ -355,15 +355,17 @@ function ProviderCard({ provider }: { provider: Provider }) {
           {newName === null ? (
             <span className="flex min-w-0 items-center gap-1">
               <span className="truncate font-medium">{provider.name}</span>
-              <button
+              <Button
                 type="button"
                 onClick={() => setNewName(provider.name)}
                 disabled={pending}
                 aria-label="이름 변경"
-                className="text-muted-foreground hover:text-foreground hover:bg-muted rounded p-1"
+                variant="ghost"
+                size="icon-xs"
+                className="text-muted-foreground"
               >
                 <Pencil className="size-3.5" />
-              </button>
+              </Button>
             </span>
           ) : (
             <input
@@ -402,15 +404,16 @@ function ProviderCard({ provider }: { provider: Provider }) {
               키 변경
             </Button>
           )}
-          <button
+          <Button
             type="button"
             onClick={remove}
             disabled={pending}
             aria-label={`${provider.name} 삭제`}
-            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md p-1.5"
+            variant="ghost-destructive"
+            size="icon-sm"
           >
             <Trash2 className="size-4" />
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -479,7 +482,7 @@ function ProviderCard({ provider }: { provider: Provider }) {
                     </span>
                   </label>
                   {t?.status === "ok" && (
-                    <span className="flex items-center gap-1 text-xs text-emerald-700">
+                    <span className="flex items-center gap-1 text-xs text-success">
                       <Check className="size-3.5" />
                       {t.ms}ms
                     </span>

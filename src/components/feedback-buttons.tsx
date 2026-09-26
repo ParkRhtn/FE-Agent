@@ -47,8 +47,8 @@ export function FeedbackButtons({
         "focus-visible:ring-ring/50 rounded-md p-1 outline-none transition-colors focus-visible:ring-3",
         value === target
           ? target === 1
-            ? "bg-emerald-50 text-emerald-600"
-            : "bg-rose-50 text-rose-600"
+            ? "bg-success/10 text-success"
+            : "bg-destructive/10 text-destructive"
           : "text-muted-foreground/70 hover:bg-muted hover:text-foreground",
       )}
     >

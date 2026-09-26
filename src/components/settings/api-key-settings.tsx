@@ -6,9 +6,9 @@ import { useState, useTransition } from "react";
 
 import { CopyButton } from "@/components/copy-button";
 import { errorText, inputClass } from "@/components/settings/model-settings";
-import { Button } from "@/components/ui/button";
 import { api, type ApiKey } from "@/lib/api/client";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/components/ui/confirm";
 import { apiErrorMessage } from "@/lib/api/errors";
 
@@ -77,8 +77,8 @@ export function ApiKeySettings({ keys, workflows }: { keys: ApiKey[]; workflows:
 
       <div className="flex flex-col gap-4 rounded-xl border p-4">
         {created && (
-          <div className="flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
-            <p className="text-sm font-medium text-amber-900">
+          <div className="flex flex-col gap-2 rounded-lg border border-warning/30 bg-warning/10 p-3">
+            <p className="text-sm font-medium text-warning-strong">
               &lsquo;{created.name}&rsquo; 키를 만들었습니다. 지금 복사해 두세요. 이 화면을 벗어나면 다시 볼 수 없습니다.
             </p>
             <div className="flex items-center gap-2">
@@ -107,15 +107,16 @@ export function ApiKeySettings({ keys, workflows }: { keys: ApiKey[]; workflows:
                     · 마지막 사용 {when(key.last_used_at)}
                   </span>
                 </div>
-                <button
+                <Button
                   type="button"
                   onClick={() => remove(key)}
                   disabled={pending}
                   aria-label={`${key.name} 키 지우기`}
-                  className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-md p-1.5"
+                  variant="ghost-destructive"
+                  size="icon-sm"
                 >
                   <Trash2 className="size-4" />
-                </button>
+                </Button>
               </li>
             ))}
           </ul>

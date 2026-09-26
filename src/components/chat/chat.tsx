@@ -11,6 +11,7 @@ import { AgentSettings } from "@/components/agents/agent-settings";
 import { AgentAvatar } from "@/components/chat/agent-avatar";
 import { hasVisibleParts, MessageView } from "@/components/chat/message";
 import { ModelSelect } from "@/components/model-select";
+import { Button } from "@/components/ui/button";
 import type { Agent, ModelOption, Tool } from "@/lib/api/client";
 
 type ChatProps = {
@@ -172,23 +173,19 @@ export function Chat({ threadId, initialMessages, initialModel, models, agent, t
                 className="field-sizing-content max-h-48 min-h-9 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm outline-none"
               />
               {busy ? (
-                <button
-                  type="button"
-                  onClick={() => stop()}
-                  aria-label="답변 중지"
-                  className="bg-foreground text-background flex size-8 shrink-0 items-center justify-center rounded-full"
-                >
+                <Button type="button" onClick={() => stop()} aria-label="답변 중지" size="icon" className="rounded-full">
                   <Square className="size-3 fill-current" />
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   type="submit"
                   disabled={!input.trim()}
                   aria-label="보내기"
-                  className="bg-foreground text-background flex size-8 shrink-0 items-center justify-center rounded-full disabled:opacity-30"
+                  size="icon"
+                  className="rounded-full disabled:opacity-30"
                 >
-                  <ArrowUp className="size-4" />
-                </button>
+                  <ArrowUp />
+                </Button>
               )}
             </div>
             <p className="text-muted-foreground mt-1.5 text-center text-[11px]">

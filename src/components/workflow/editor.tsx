@@ -496,7 +496,7 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
           </label>
         </nav>
         <span className="text-muted-foreground flex shrink-0 items-center gap-1.5 text-xs">
-          <span className={cn("size-1.5 rounded-full", dirty ? "bg-amber-500" : "bg-emerald-500")} />
+          <span className={cn("size-1.5 rounded-full", dirty ? "bg-warning" : "bg-success")} />
           {saving ? "저장 중" : dirty ? "저장 안 됨" : "저장됨"}
         </span>
         <button
@@ -508,8 +508,8 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
             !publishedAt
               ? "text-muted-foreground bg-muted"
               : changedFromPublished
-                ? "bg-amber-50 text-amber-800 hover:bg-amber-100"
-                : "bg-sky-50 text-sky-800 hover:bg-sky-100",
+                ? "bg-warning/10 text-warning-strong hover:bg-warning/15"
+                : "bg-info/10 text-info-strong hover:bg-info/15",
           )}
           title={publishedAt ? "눌러서 배포본과 비교" : "외부 API·공개 링크는 배포본만 실행합니다"}
         >
@@ -523,7 +523,7 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
             onClick={() => setPanel(panel === "schedule" ? null : "schedule")}
             aria-pressed={panel === "schedule"}
             title={nextRunAt ? `다음 실행: ${nextRunLabel(nextRunAt)}` : "예약 실행 설정"}
-            className="flex shrink-0 items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800 hover:bg-emerald-100"
+            className="flex shrink-0 items-center gap-1.5 rounded-md bg-success/10 px-2 py-1 text-xs font-medium text-success-strong hover:bg-success/15"
           >
             <Clock className="size-3.5" />
             {scheduleLabel(schedule)}
@@ -531,7 +531,7 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
         )}
         {deleteProtected && (
           <span
-            className="flex shrink-0 items-center gap-1 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-800"
+            className="flex shrink-0 items-center gap-1 rounded-md bg-warning/10 px-2 py-1 text-xs text-warning-strong"
             title="삭제 보호 중 (더보기 메뉴에서 풀 수 있습니다)"
           >
             <Lock className="size-3.5" />
@@ -630,7 +630,7 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
         />
         <div
           ref={canvasRef}
-          className="relative min-w-0 flex-1 bg-zinc-100/70"
+          className="relative min-w-0 flex-1 bg-canvas"
           onDragOver={(e) => {
             if (e.dataTransfer.types.includes(DRAG_TYPE)) {
               e.preventDefault();
@@ -702,14 +702,16 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
                   )}
                 </button>
               ))}
-              <button
+              <Button
                 type="button"
                 onClick={() => setPanel(null)}
                 aria-label="패널 닫기"
-                className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             </div>
 
             <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-4">
@@ -785,9 +787,9 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
                         {new Date(pastRunAt).toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" })} 실행
                         결과를 보고 있습니다.
                       </span>
-                      <button type="button" onClick={clearPastRun} className="font-medium hover:underline">
+                      <Button type="button" onClick={clearPastRun} variant="link" size="inline" className="text-inherit">
                         지우기
-                      </button>
+                      </Button>
                     </div>
                   )}
                   <div className="flex flex-col gap-2">
@@ -885,11 +887,11 @@ function Editor({ workflow, models, defaultModel, tools, agents, focusName }: Ed
                   )}
 
                   {run.status === "done" && (
-                    <div className="flex flex-col gap-2 rounded-lg border border-emerald-200 bg-emerald-50/50 p-3">
-                      <span className="text-xs font-medium text-emerald-700">최종 출력</span>
+                    <div className="flex flex-col gap-2 rounded-lg border border-success/30 bg-success/5 p-3">
+                      <span className="text-xs font-medium text-success">최종 출력</span>
                       <p className="text-sm leading-relaxed whitespace-pre-wrap">{run.output || "(빈 출력)"}</p>
                       {runId && (
-                        <div className="flex items-center justify-between gap-2 border-t border-emerald-200 pt-2">
+                        <div className="flex items-center justify-between gap-2 border-t border-success/30 pt-2">
                           <span className="text-muted-foreground text-xs">이 결과는 어땠나요?</span>
                           <FeedbackButtons key={runId} runId={runId} initial={runFeedback} />
                         </div>

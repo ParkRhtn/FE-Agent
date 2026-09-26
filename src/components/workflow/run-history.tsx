@@ -85,13 +85,13 @@ export function RunHistory({
                 <span className="font-medium">{status.label}</span>
                 <span className="text-muted-foreground">{when(run.created_at)}</span>
                 {run.trigger === "schedule" && (
-                  <span className="flex items-center gap-0.5 rounded bg-emerald-50 px-1 text-[11px] text-emerald-800">
+                  <span className="flex items-center gap-0.5 rounded bg-success/10 px-1 text-[11px] text-success-strong">
                     <Clock className="size-3" />
                     예약
                   </span>
                 )}
                 {run.trigger === "api" && (
-                  <span className="flex items-center gap-0.5 rounded bg-sky-50 px-1 text-[11px] text-sky-800">
+                  <span className="flex items-center gap-0.5 rounded bg-info/10 px-1 text-[11px] text-info-strong">
                     <Code className="size-3" />
                     API
                   </span>
@@ -103,8 +103,8 @@ export function RunHistory({
                   </span>
                 )}
                 {took && <span className="text-muted-foreground tabular-nums">{took}</span>}
-                {run.feedback === 1 && <ThumbsUp className="ml-auto size-3.5 fill-current text-emerald-600" />}
-                {run.feedback === -1 && <ThumbsDown className="ml-auto size-3.5 fill-current text-rose-600" />}
+                {run.feedback === 1 && <ThumbsUp className="ml-auto size-3.5 fill-current text-success" />}
+                {run.feedback === -1 && <ThumbsDown className="ml-auto size-3.5 fill-current text-destructive" />}
               </span>
               <span className="line-clamp-2 text-sm break-words">{run.input || "(입력 없음)"}</span>
             </button>

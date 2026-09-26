@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import type { GraphDiff, NodeChange } from "@/lib/workflow-diff";
 
 const CHANGE_STYLE: Record<NodeChange["change"], { label: string; badge: string }> = {
-  added: { label: "추가", badge: "bg-emerald-50 text-emerald-700" },
-  changed: { label: "변경", badge: "bg-amber-50 text-amber-800" },
-  removed: { label: "삭제", badge: "bg-rose-50 text-rose-700" },
+  added: { label: "추가", badge: "bg-success/10 text-success" },
+  changed: { label: "변경", badge: "bg-warning/10 text-warning-strong" },
+  removed: { label: "삭제", badge: "bg-destructive/10 text-destructive" },
 };
 
 function Badge({ change }: { change: NodeChange["change"] }) {
@@ -82,10 +82,10 @@ export function DiffPanel({
                         {node.fields.map((field) => (
                           <div key={field.key} className="flex flex-col gap-1">
                             <span className="text-muted-foreground text-xs">{field.label}</span>
-                            <p className="rounded bg-rose-50 px-2 py-1 font-mono text-xs break-words whitespace-pre-wrap text-rose-800 line-through decoration-rose-300">
+                            <p className="rounded bg-destructive/10 px-2 py-1 font-mono text-xs break-words whitespace-pre-wrap text-destructive line-through decoration-destructive/40">
                               {field.before}
                             </p>
-                            <p className="rounded bg-emerald-50 px-2 py-1 font-mono text-xs break-words whitespace-pre-wrap text-emerald-800">
+                            <p className="rounded bg-success/10 px-2 py-1 font-mono text-xs break-words whitespace-pre-wrap text-success-strong">
                               {field.after}
                             </p>
                           </div>

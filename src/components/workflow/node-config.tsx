@@ -4,6 +4,7 @@ import { cn } from "cn";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ModelSelect } from "@/components/model-select";
 import type { Agent, ModelOption, Tool } from "@/lib/api/client";
@@ -78,14 +79,16 @@ export function NodeConfig({
           <span className="text-muted-foreground text-xs">{meta.hint}</span>
         </div>
         {node.deletable !== false && (
-          <button
+          <Button
             type="button"
             onClick={onDelete}
             aria-label="노드 삭제"
-            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-auto rounded-md p-1.5"
+            variant="ghost-destructive"
+            size="icon-sm"
+            className="ml-auto"
           >
             <Trash2 className="size-4" />
-          </button>
+          </Button>
         )}
       </div>
 
@@ -196,7 +199,7 @@ export function NodeConfig({
           </Field>
           {operator?.needsRight && <Field label="비교할 값">{templateField("right")}</Field>}
           <p className="text-muted-foreground text-xs leading-relaxed">
-            노드 오른쪽의 <span className="text-emerald-600">참</span>·<span className="text-rose-600">거짓</span>{" "}
+            노드 오른쪽의 <span className="text-success">참</span>·<span className="text-destructive">거짓</span>{" "}
             점에서 각각 다음 노드로 연결하세요.
           </p>
         </>

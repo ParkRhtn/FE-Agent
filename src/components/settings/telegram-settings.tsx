@@ -164,7 +164,7 @@ export function TelegramSettings({ status }: { status: TelegramStatus }) {
           <p className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-3 text-sm">{error}</p>
         )}
         {notice && (
-          <p className="flex items-center gap-1.5 text-sm text-emerald-700">
+          <p className="flex items-center gap-1.5 text-sm text-success">
             <Check className="size-4" />
             {notice}
           </p>

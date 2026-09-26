@@ -22,10 +22,10 @@ export function TemplateText({ text }: { text: string }) {
 export function StatusIcon({ status, className }: { status?: RunStatus; className?: string }) {
   switch (status) {
     case "running":
-      return <LoaderCircle className={cn("size-4 animate-spin text-sky-500", className)} aria-label="실행 중" />;
+      return <LoaderCircle className={cn("size-4 animate-spin text-info", className)} aria-label="실행 중" />;
     case "done":
       return (
-        <span className={cn("flex size-4 items-center justify-center rounded-full bg-emerald-500", className)}>
+        <span className={cn("flex size-4 items-center justify-center rounded-full bg-success", className)}>
           <Check className="size-3 text-white" strokeWidth={3} aria-label="완료" />
         </span>
       );
@@ -101,8 +101,8 @@ function WorkflowNodeView({ id, type, data, selected }: NodeProps<FlowNode>) {
         selected && "border-foreground/30 ring-foreground/5 ring-4",
         data._status === "skipped" && "opacity-45",
         data._status === "error" && "border-destructive/50",
-        data._diff === "added" && "border-emerald-400 ring-4 ring-emerald-100",
-        data._diff === "changed" && "border-amber-400 ring-4 ring-amber-100",
+        data._diff === "added" && "border-success ring-4 ring-success/15",
+        data._diff === "changed" && "border-warning ring-4 ring-warning/15",
       )}
     >
       {kind !== "start" && (
@@ -154,11 +154,11 @@ function WorkflowNodeView({ id, type, data, selected }: NodeProps<FlowNode>) {
               key={branch}
               className={cn(
                 "relative flex items-center justify-end gap-1.5 px-2.5 py-1 last:rounded-b-xl",
-                takenBranch === branch && (branch === "true" ? "bg-emerald-50 font-medium" : "bg-rose-50 font-medium"),
+                takenBranch === branch && (branch === "true" ? "bg-success/10 font-medium" : "bg-destructive/10 font-medium"),
                 takenBranch && takenBranch !== branch && "opacity-40",
               )}
             >
-              <span className={branch === "true" ? "text-emerald-600" : "text-rose-600"}>
+              <span className={branch === "true" ? "text-success" : "text-destructive"}>
                 {branch === "true" ? "참" : "거짓"}
               </span>
               <Handle
